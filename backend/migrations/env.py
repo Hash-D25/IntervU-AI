@@ -1,23 +1,22 @@
-"""Alembic environment (async).
+"""Alembic environment (synchronous).
+
+Migrations run with a *synchronous* engine. This is simpler and fully
+cross-platform — it avoids the async event-loop constraints some drivers hit on
+Windows (psycopg's async mode cannot use the default ProactorEventLoop). The
+application itself remains async; only migrations run sync.
 
 The URL comes from application settings, and ``target_metadata`` is the shared
-``Base.metadata``. As feature models are added, import them here so autogenerate
-can see their tables.
+``Base.metadata``. Importing the registry registers every model so autogenerate
+can detect them.
 """
 
-import asyncio
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import Connection
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy import create_engine
 
 from app.core.config import get_settings
-from app.db.base import Base
-from app.db.engine import create_engine
-
-# Import feature ORM models below so Alembic autogenerate detects them.
-# (No models yet — added in later iterations.)
+from app.db.registry import Base
 
 config = context.config
 if config.config_file_name is not None:
@@ -41,20 +40,20 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def _run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
-    with context.begin_transaction():
-        context.run_migrations()
-
-
-async def run_migrations_online() -> None:
-    engine: AsyncEngine = create_engine(_database_url())
-    async with engine.connect() as connection:
-        await connection.run_sync(_run_migrations)
-    await engine.dispose()
+def run_migrations_online() -> None:
+    connectable = create_engine(_database_url())
+    try:
+        with connectable.connect() as connection:
+            context.configure(
+                connection=connection, target_metadata=target_metadata, compare_type=True
+            )
+            with context.begin_transaction():
+                context.run_migrations()
+    finally:
+        connectable.dispose()
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    run_migrations_online()

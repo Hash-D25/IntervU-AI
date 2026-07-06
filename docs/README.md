@@ -12,6 +12,7 @@ One file per phase/iteration, kept small and self-contained:
 | --- | ------ |
 | [`implementation/00-project-setup.md`](./implementation/00-project-setup.md) | Repo scaffolding, tooling, dependency choices. |
 | [`implementation/01-foundation.md`](./implementation/01-foundation.md) | Runnable backend + frontend foundation (config, DB, DI, app factory, health, migrations). |
+| [`implementation/02-database-layer.md`](./implementation/02-database-layer.md) | Entities, ORM models, mixins, base + concrete repositories, initial migration, tests. |
 
 New iterations append a new numbered file here.
 
