@@ -60,8 +60,9 @@ business logic.
 - Prompts live in a dedicated `prompts/` area, never inline in business logic.
 - Configuration comes from environment variables.
 
-See [`docs/`](./docs) once populated, and per-folder `README.md` files that
-describe each module's single responsibility.
+See [`docs/`](./docs) for the living **implementation documentation** (one file
+per iteration explaining what was built and why), and per-folder `README.md`
+files that describe each module's single responsibility.
 
 ---
 
