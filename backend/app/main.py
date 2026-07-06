@@ -10,14 +10,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-# Register every ORM model before any route/service imports pull in a subset.
-# Without this, string-based relationships (User -> "Interview") fail at runtime.
-from app.db import registry as _registry  # noqa: F401
-
 from app.api.router import api_router
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging
+
+# Register every ORM model before any route/service imports pull in a subset.
+# Without this, string-based relationships (User -> "Interview") fail at runtime.
+from app.db import registry as _registry  # noqa: F401
 from app.db.engine import create_engine
 from app.db.session import create_session_factory
 

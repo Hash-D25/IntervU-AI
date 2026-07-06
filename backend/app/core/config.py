@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
+    # Resume uploads. ``local`` writes to disk; ``cloudinary`` uses Cloudinary raw uploads.
+    resume_storage_backend: str = "local"
+    resume_upload_dir: str = "uploads"
+    resume_max_size_mb: int = 5
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+
     # LLM provider (OpenAI-compatible). Values are read now but only consumed
     # once AI features land in a later iteration.
     llm_provider: str = "openai"

@@ -32,6 +32,16 @@ class ConflictError(AppError):
         super().__init__(message, status_code=409)
 
 
+class BadRequestError(AppError):
+    def __init__(self, message: str = "Invalid request") -> None:
+        super().__init__(message, status_code=400)
+
+
+class PayloadTooLargeError(AppError):
+    def __init__(self, message: str = "File too large") -> None:
+        super().__init__(message, status_code=413)
+
+
 async def _handle_app_error(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
