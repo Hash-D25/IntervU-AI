@@ -1,0 +1,128 @@
+"""End-to-end auth flow against in-memory SQLite.
+
+The ``get_session`` dependency is overridden to use a StaticPool SQLite engine so
+the in-memory database persists across requests within a test.
+"""
+
+from collections.abc import AsyncGenerator
+
+import pytest
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.pool import StaticPool
+
+from app.db.registry import Base
+from app.db.session import get_session
+from app.main import create_app
+
+_REGISTER_PAYLOAD = {
+    "email": "candidate@example.com",
+    "password": "sup3rsecret",
+    "full_name": "Test Candidate",
+}
+
+
+@pytest.fixture
+async def client() -> AsyncGenerator[AsyncClient]:
+    engine = create_async_engine(
+        "sqlite+aiosqlite://",
+        poolclass=StaticPool,
+        connect_args={"check_same_thread": False},
+    )
+    async with engine.begin() as connection:
+        await connection.run_sync(Base.metadata.create_all)
+
+    factory = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def override_get_session() -> AsyncGenerator[AsyncSession]:
+        async with factory() as session:
+            yield session
+
+    app: FastAPI = create_app()
+    app.dependency_overrides[get_session] = override_get_session
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
+        yield async_client
+
+    await engine.dispose()
+
+
+async def _register_and_login(client: AsyncClient) -> dict[str, str]:
+    await client.post("/api/v1/auth/register", json=_REGISTER_PAYLOAD)
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": _REGISTER_PAYLOAD["email"], "password": _REGISTER_PAYLOAD["password"]},
+    )
+    assert response.status_code == 200
+    return response.json()
+
+
+async def test_register_returns_user_without_password(client: AsyncClient) -> None:
+    response = await client.post("/api/v1/auth/register", json=_REGISTER_PAYLOAD)
+
+    assert response.status_code == 201
+    body = response.json()
+    assert body["email"] == _REGISTER_PAYLOAD["email"]
+    assert "password" not in body
+    assert "hashed_password" not in body
+
+
+async def test_duplicate_registration_conflicts(client: AsyncClient) -> None:
+    await client.post("/api/v1/auth/register", json=_REGISTER_PAYLOAD)
+    response = await client.post("/api/v1/auth/register", json=_REGISTER_PAYLOAD)
+
+    assert response.status_code == 409
+
+
+async def test_login_with_wrong_password_is_unauthorized(client: AsyncClient) -> None:
+    await client.post("/api/v1/auth/register", json=_REGISTER_PAYLOAD)
+    response = await client.post(
+        "/api/v1/auth/login",
+        json={"email": _REGISTER_PAYLOAD["email"], "password": "wrong-password"},
+    )
+
+    assert response.status_code == 401
+
+
+async def test_me_returns_current_user_with_token(client: AsyncClient) -> None:
+    tokens = await _register_and_login(client)
+    response = await client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {tokens['access_token']}"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["email"] == _REGISTER_PAYLOAD["email"]
+
+
+async def test_me_without_token_is_rejected(client: AsyncClient) -> None:
+    response = await client.get("/api/v1/auth/me")
+    assert response.status_code == 401
+
+
+async def test_refresh_rotates_and_invalidates_old_token(client: AsyncClient) -> None:
+    tokens = await _register_and_login(client)
+    old_refresh = tokens["refresh_token"]
+
+    rotated = await client.post("/api/v1/auth/refresh", json={"refresh_token": old_refresh})
+    assert rotated.status_code == 200
+    assert rotated.json()["refresh_token"] != old_refresh
+
+    reused = await client.post("/api/v1/auth/refresh", json={"refresh_token": old_refresh})
+    assert reused.status_code == 401
+
+
+async def test_logout_revokes_refresh_token(client: AsyncClient) -> None:
+    tokens = await _register_and_login(client)
+
+    logout = await client.post(
+        "/api/v1/auth/logout", json={"refresh_token": tokens["refresh_token"]}
+    )
+    assert logout.status_code == 204
+
+    reused = await client.post(
+        "/api/v1/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
+    )
+    assert reused.status_code == 401

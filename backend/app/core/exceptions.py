@@ -22,6 +22,16 @@ class NotFoundError(AppError):
         super().__init__(message, status_code=404)
 
 
+class UnauthorizedError(AppError):
+    def __init__(self, message: str = "Not authenticated") -> None:
+        super().__init__(message, status_code=401)
+
+
+class ConflictError(AppError):
+    def __init__(self, message: str = "Resource already exists") -> None:
+        super().__init__(message, status_code=409)
+
+
 async def _handle_app_error(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 

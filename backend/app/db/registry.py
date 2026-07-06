@@ -6,6 +6,7 @@ model class has the side effect of registering its table.
 """
 
 from app.db.base import Base
+from app.features.auth.models import RefreshToken
 from app.features.feedback.models import FeedbackReport
 from app.features.interview.models import Answer, Interview, Question
 from app.features.user.models import User
@@ -16,5 +17,6 @@ __all__ = [
     "FeedbackReport",
     "Interview",
     "Question",
+    "RefreshToken",
     "User",
 ]

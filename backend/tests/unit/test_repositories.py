@@ -35,12 +35,14 @@ async def session() -> AsyncGenerator[AsyncSession]:
 
 
 async def _make_user(session: AsyncSession, email: str = "candidate@example.com") -> User:
-    return await UserRepository(session).add(User(email=email, full_name="Test Candidate"))
+    return await UserRepository(session).add(
+        User(email=email, full_name="Test Candidate", hashed_password="x")
+    )
 
 
 async def test_user_add_get_and_lookup_by_email(session: AsyncSession) -> None:
     repo = UserRepository(session)
-    created = await repo.add(User(email="a@example.com", full_name="A"))
+    created = await repo.add(User(email="a@example.com", full_name="A", hashed_password="x"))
 
     assert created.id is not None
     assert created.created_at is not None

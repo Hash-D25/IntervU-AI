@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     # Database (async psycopg driver, e.g. postgresql+psycopg://...)
     database_url: str
 
+    # Authentication / JWT. Override JWT_SECRET_KEY in every real environment.
+    jwt_secret_key: str = "dev-insecure-secret-change-me-in-every-real-environment"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 7
+
     # LLM provider (OpenAI-compatible). Values are read now but only consumed
     # once AI features land in a later iteration.
     llm_provider: str = "openai"
