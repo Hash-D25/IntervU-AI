@@ -49,9 +49,12 @@ class Settings(BaseSettings):
     llm_fallback_base_url: str = "https://api.groq.com/openai/v1"
     llm_fallback_model: str = "llama-3.1-8b-instant"
     llm_max_resume_chars: int = 6000
+    llm_max_jd_chars: int = 8000
     llm_num_predict: int = 800
     llm_disable_thinking: bool = True
     llm_primary_timeout_seconds: float = 15.0
+    job_description_analyzer: str = "llm"
+    job_description_max_size_mb: int = 5
 
     # Vector store
     chroma_host: str = "localhost"

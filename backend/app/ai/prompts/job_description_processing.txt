@@ -1,0 +1,22 @@
+You are a job description analyzer. Extract structured information from the job description below.
+
+Return ONLY valid JSON with this exact shape (use empty lists when unknown):
+{
+  "skills": ["string"],
+  "technologies": ["string"],
+  "responsibilities": ["string"],
+  "seniority_level": "intern|entry|junior|mid|senior|lead|staff|principal|manager|director|executive|unspecified"
+}
+
+Rules:
+- Be factual; do not invent details not present in the job description.
+- skills: required or preferred competencies (e.g. communication, system design, algorithms).
+- technologies: tools, languages, frameworks, platforms explicitly mentioned.
+- responsibilities: key duties as concise bullet-style strings.
+- seniority_level: infer from title and requirements; use "unspecified" only when unclear.
+- Deduplicate skills and technologies.
+
+Job description:
+---
+{job_description_text}
+---

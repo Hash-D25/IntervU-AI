@@ -3,11 +3,8 @@
 import pytest
 
 from app.core.exceptions import ParseError
-from app.features.resume.parsing.json_response import (
-    extract_json_payload,
-    parse_llm_json_response,
-    strip_code_fence,
-)
+from app.features.resume.parsing.json_response import parse_llm_json_response
+from app.shared.llm_json import extract_json_payload, strip_code_fence
 
 
 def test_strip_code_fence() -> None:
