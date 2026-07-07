@@ -36,3 +36,25 @@ def test_keeps_valid_improvements() -> None:
     improvements = ["Add concrete metrics for API latency improvements."]
 
     assert filter_contradictory_improvements(improvements, answer) == improvements
+
+
+def test_filters_cp_context_when_answer_already_covers_cp() -> None:
+    answer = (
+        "I actively practice competitive programming and have solved 800+ problems "
+        "on platforms like LeetCode and Codeforces."
+    )
+    improvements = [
+        "Provide more context about how your competitive programming experience "
+        "has helped you develop strong analytical thinking.",
+    ]
+
+    assert filter_contradictory_improvements(improvements, answer) == []
+
+
+def test_filters_auth_detail_request_when_auth_already_explained() -> None:
+    answer = "I owned the auth module end-to-end with JWT refresh flow and Prisma schema."
+    improvements = [
+        "Offer more detailed explanations of authentication implementation specifics.",
+    ]
+
+    assert filter_contradictory_improvements(improvements, answer) == []

@@ -23,14 +23,30 @@ _ANSWER_HAS_CP_COUNT = re.compile(
 )
 _ANSWER_HAS_GPA = re.compile(r"\b(?:cgpa|gpa)\b", re.IGNORECASE)
 _ANSWER_HAS_PROJECTS = re.compile(
-    r"\b(?:uncdoit|ytnotes|project|built|developed)\b",
+    r"\b(?:uncdoit|ytnotes|projects?|built|developed)\b",
     re.IGNORECASE,
 )
 _ANSWER_HAS_MOTIVATION = re.compile(
     r"\b(?:interested in|excited about|why).{0,60}\b(?:epam|role|internship|opportunity)\b",
     re.IGNORECASE,
 )
-
+_ASK_CP_CONTEXT = re.compile(
+    r"\b(?:provide|explain|more context|develop|context about)\b.{0,60}\b"
+    r"(?:competitive programming|analytical thinking|data structures|algorithms|dsa)\b",
+    re.IGNORECASE,
+)
+_ANSWER_HAS_CP_TOPIC = re.compile(
+    r"\b(?:competitive programming|leetcode|codeforces|data structures)\b",
+    re.IGNORECASE,
+)
+_ASK_AUTH_DETAILS = re.compile(
+    r"\b(?:more detailed|specifics|elaborate|offer).{0,50}\b(?:auth|authentication)\b",
+    re.IGNORECASE,
+)
+_ANSWER_HAS_AUTH = re.compile(
+    r"\b(?:auth|authentication|jwt|refresh flow|prisma)\b",
+    re.IGNORECASE,
+)
 
 def filter_contradictory_improvements(
     improvements: list[str],
@@ -53,6 +69,18 @@ def filter_contradictory_improvements(
 def _contradicts_answer(improvement: str, answer: str) -> bool:
     imp = improvement.casefold()
     if _asks_for_cp_quantification(imp) and _ANSWER_HAS_CP_COUNT.search(answer):
+        return True
+    if _ASK_CP_CONTEXT.search(improvement) and (
+        _ANSWER_HAS_CP_COUNT.search(answer) or _ANSWER_HAS_CP_TOPIC.search(answer)
+    ):
+        return True
+    if _ASK_AUTH_DETAILS.search(improvement) and _ANSWER_HAS_AUTH.search(answer):
+        return True
+    if (
+        _asks_epam_project_alignment(improvement)
+        and _ANSWER_HAS_MOTIVATION.search(answer)
+        and _ANSWER_HAS_PROJECTS.search(answer)
+    ):
         return True
     if _QUANTIFY_GPA.search(improvement) and _ANSWER_HAS_GPA.search(answer):
         return True
@@ -80,3 +108,8 @@ def _asks_for_cp_quantification(improvement: str) -> bool:
         )
     )
     return mentions_cp and asks_quantify
+
+
+def _asks_epam_project_alignment(improvement: str) -> bool:
+    imp = improvement.casefold()
+    return "epam" in imp and "project" in imp and ("align" in imp or "alignment" in imp)

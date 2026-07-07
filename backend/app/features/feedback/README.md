@@ -2,8 +2,14 @@
 
 Feedback report generation.
 
-Responsibility: aggregate evaluation results into an actionable report —
-strengths, weaknesses, improvement suggestions, and a learning roadmap.
+Responsibility: aggregate per-answer evaluations and interview history into an
+actionable coach-style report — strengths, weaknesses, recommendations, and a
+learning roadmap.
 
-Tone is **coach, not judge**: prefer "areas for improvement include..." over
-"you failed."
+- `protocols.py` — `FeedbackGenerator` contract (replaceable strategies)
+- `strategies/llm_generator.py` — default LLM report generator
+- `context_builder.py` — builds input from `execution_context` + evaluations
+- `service.py` — orchestration + persistence to `feedback_reports`
+- Prompt: `app/ai/prompts/feedback_generation.txt`
+
+Tone is **coach, not judge**: prefer constructive, actionable guidance.

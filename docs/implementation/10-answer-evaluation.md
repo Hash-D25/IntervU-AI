@@ -120,4 +120,4 @@ cd backend
 
 ## What's next
 
-Aggregate per-answer evaluations into an interview-level feedback report.
+Interview-level feedback report aggregating per-answer evaluations.
