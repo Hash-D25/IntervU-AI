@@ -106,7 +106,9 @@ def sanitize_project_name(name: str) -> str:
         if stripped == cleaned:
             break
         cleaned = stripped.strip()
-    cleaned = re.sub(r"(?<=[a-z])Live(?:\s+Extension)?\s*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(
+        r"(?<=[a-z])Live(?:\s+Extension)?\s*$", "", cleaned, flags=re.IGNORECASE
+    ).strip()
     cleaned = re.sub(r"\s+Live\s+Extension\s*$", "", cleaned, flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"(?<=[a-z])Link\s*$", "", cleaned, flags=re.IGNORECASE).strip()
     cleaned = re.sub(r"(?<=[a-z])Live\s*$", "", cleaned, flags=re.IGNORECASE).strip()

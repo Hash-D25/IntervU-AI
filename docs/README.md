@@ -16,6 +16,9 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/03-authentication.md`](./implementation/03-authentication.md) | JWT auth, rotating refresh tokens, register/login/logout, protected routes. |
 | [`implementation/04-resume-upload.md`](./implementation/04-resume-upload.md) | PDF upload, validation, local storage, metadata in DB. |
 | [`implementation/05-resume-parsing.md`](./implementation/05-resume-parsing.md) | PDF parsing, structured profile storage, pluggable parsers. |
+| [`implementation/06-job-description-processing.md`](./implementation/06-job-description-processing.md) | JD text/PDF analysis → skills, technologies, responsibilities, seniority. |
+| [`implementation/07-interview-creation.md`](./implementation/07-interview-creation.md) | Interview session creation, metadata, plan, state machine seed. |
+| [`implementation/08-question-generator.md`](./implementation/08-question-generator.md) | Category-based question generation (DSA, project, behavioral, CS). |
 
 New iterations append a new numbered file here.
 

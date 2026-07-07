@@ -139,5 +139,4 @@ Integration tests use a **fake parser** — no live LLM calls in CI.
 
 ## What's next
 
-Iteration 06 — interviews that consume parsed resume data for personalized
-questions.
+Iteration 06 — job description processing, then personalized interview sessions.

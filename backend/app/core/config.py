@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     llm_primary_timeout_seconds: float = 15.0
     job_description_analyzer: str = "llm"
     job_description_max_size_mb: int = 5
+    question_generator: str = "llm"
 
     # Vector store
     chroma_host: str = "localhost"

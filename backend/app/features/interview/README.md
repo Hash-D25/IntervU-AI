@@ -8,3 +8,6 @@ candidate's answers, parsed resume, and optional target job description.
 
 This iteration creates interview sessions, stores metadata and an interview plan,
 and seeds a future-ready state machine without generating questions yet.
+
+Question generation lives under `question_generation/` with category-specific
+strategies (DSA, project, behavioral, CS fundamentals) driven by the interview plan.
