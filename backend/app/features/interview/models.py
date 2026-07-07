@@ -9,10 +9,15 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlalchemy import Enum, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import JSON
 
 from app.db.base import Base
 from app.db.mixins import TimestampMixin, UUIDPrimaryKeyMixin
+from app.features.interview.planning.schemas import InterviewType, SessionState
+
+JsonPayload = JSON().with_variant(JSONB, "postgresql")
 
 if TYPE_CHECKING:
     from app.features.feedback.models import FeedbackReport
@@ -40,13 +45,27 @@ class Interview(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __tablename__ = "interviews"
 
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    resume_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("resumes.id", ondelete="SET NULL"), index=True, nullable=True
+    )
     role: Mapped[str] = mapped_column(String(255))
     company: Mapped[str | None] = mapped_column(String(255))
     job_description: Mapped[str | None] = mapped_column(Text)
+    interview_type: Mapped[InterviewType | None] = mapped_column(
+        Enum(InterviewType, name="interview_type", values_callable=_enum_values),
+        nullable=True,
+    )
     status: Mapped[InterviewStatus] = mapped_column(
         Enum(InterviewStatus, name="interview_status", values_callable=_enum_values),
         default=InterviewStatus.CREATED,
     )
+    session_state: Mapped[SessionState | None] = mapped_column(
+        Enum(SessionState, name="interview_session_state", values_callable=_enum_values),
+        default=SessionState.READY,
+        nullable=True,
+    )
+    interview_metadata: Mapped[dict[str, object]] = mapped_column(JsonPayload, default=dict)
+    interview_plan: Mapped[dict[str, object]] = mapped_column(JsonPayload, default=dict)
 
     user: Mapped["User"] = relationship(back_populates="interviews")
     questions: Mapped[list["Question"]] = relationship(

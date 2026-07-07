@@ -4,7 +4,7 @@ Interview session lifecycle and dynamic question flow.
 
 Responsibility: manage a session as an **explicit state machine** (not raw chat
 history), driving contextual questions and adaptive follow-ups based on the
-candidate's answers, resume, and target job description.
+candidate's answers, parsed resume, and optional target job description.
 
-The actual conversational reasoning is delegated to `app/ai/graphs`; this feature
-owns session state, persistence, and orchestration.
+This iteration creates interview sessions, stores metadata and an interview plan,
+and seeds a future-ready state machine without generating questions yet.

@@ -24,6 +24,12 @@ class InterviewRepository(BaseRepository[Interview]):
         )
         return result.scalars().all()
 
+    async def get_for_user(self, interview_id: UUID, user_id: UUID) -> Interview | None:
+        result = await self.session.execute(
+            select(Interview).where(Interview.id == interview_id, Interview.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
+
 
 class QuestionRepository(BaseRepository[Question]):
     model = Question

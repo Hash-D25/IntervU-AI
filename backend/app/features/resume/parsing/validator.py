@@ -6,6 +6,7 @@ from app.features.resume.parsing.normalization import (
     normalize_string_list,
     subtract_overlap,
 )
+from app.features.resume.parsing.project_names import sanitize_project_name
 from app.features.resume.parsing.schemas import ParsedResume, ProjectEntry
 
 _MAX_ITEMS = 50
@@ -22,9 +23,10 @@ class ParsedResumeValidator:
             normalize_string_list(parsed.technologies + project_technologies),
         )
         achievements = normalize_achievements(parsed.achievements)
+        projects = _normalize_projects(parsed.projects)
         return ParsedResume(
             skills=skills,
-            projects=parsed.projects,
+            projects=projects,
             experience=parsed.experience,
             technologies=technologies,
             education=parsed.education,
@@ -41,6 +43,13 @@ class ParsedResumeValidator:
             raise ParseError("Parsed resume contains too many entries")
         if len(parsed.education) > _MAX_ITEMS:
             raise ParseError("Parsed resume contains too many education entries")
+
+
+def _normalize_projects(projects: list[ProjectEntry]) -> list[ProjectEntry]:
+    return [
+        project.model_copy(update={"name": sanitize_project_name(project.name)})
+        for project in projects
+    ]
 
 
 def _collect_project_technologies(projects: list[ProjectEntry]) -> list[str]:

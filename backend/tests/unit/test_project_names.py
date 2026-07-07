@@ -1,6 +1,10 @@
 """Project name extraction and alignment tests."""
 
-from app.features.resume.parsing.project_names import align_project_names, extract_project_names
+from app.features.resume.parsing.project_names import (
+    align_project_names,
+    extract_project_names,
+    sanitize_project_name,
+)
 from app.features.resume.parsing.schemas import ProjectEntry
 
 SAMPLE_PROJECTS_SECTION = """
@@ -65,3 +69,19 @@ def test_align_project_names_normalizes_separator_spacing() -> None:
     llm_projects = [ProjectEntry(name="ytNotes: YouTube Notes Chrome Extension")]
     aligned = align_project_names(reference, llm_projects)
     assert aligned[0].name == "ytNotes : YouTube Notes Chrome Extension"
+
+
+def test_sanitize_project_name_fixes_ocr_and_link_artifacts() -> None:
+    assert (
+        sanitize_project_name("UncDoIt - AI W eb Navigation AssistantLink")
+        == "UncDoIt - AI Web Navigation Assistant"
+    )
+    assert (
+        sanitize_project_name("ytNotes : Y ouT ube Notes Chrome ExtensionLive Extension")
+        == "ytNotes : YouTube Notes Chrome Extension"
+    )
+    assert (
+        sanitize_project_name("GitHub Repository Browser : Private Repo ViewerLive")
+        == "GitHub Repository Browser : Private Repo Viewer"
+    )
+    assert sanitize_project_name("Social Media App Live") == "Social Media App"

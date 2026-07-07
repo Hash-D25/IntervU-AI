@@ -21,6 +21,10 @@ _SECTION_BREAK = re.compile(
 )
 _TITLE_SEP = re.compile(r"(?:\s[-–—]\s+|:\s)")
 _FORMATTING = re.compile(r"[*_]+")
+_OCR_SPLIT = re.compile(r"\b([A-Z])\s+([a-z]{2,})\b")
+_MERGED_OCR = re.compile(r"\b([A-Z])\s+([a-z]{1,3})(?=[A-Z])")
+_CAP_SPLIT = re.compile(r"([a-z])([A-Z])\s+([a-z]{2,})")
+_MULTI_SPACE = re.compile(r"\s+")
 
 
 def extract_project_names(text: str) -> list[ProjectEntry]:
@@ -70,7 +74,7 @@ def align_project_names(
             name = ref_names[matched_idx]
         else:
             name = project.name
-        aligned.append(project.model_copy(update={"name": name}))
+        aligned.append(project.model_copy(update={"name": sanitize_project_name(name)}))
 
     return aligned
 
@@ -93,9 +97,34 @@ def _best_name_match(name: str, references: list[str], used: set[int]) -> int | 
     return best_idx
 
 
+def sanitize_project_name(name: str) -> str:
+    """Normalize project titles for display and interview context."""
+    cleaned = _FORMATTING.sub("", name).strip()
+    cleaned = _fix_ocr_spacing(cleaned)
+    while True:
+        stripped = re.sub(r"\s+(?:Link|Live|Code)\s*$", "", cleaned, flags=re.IGNORECASE)
+        if stripped == cleaned:
+            break
+        cleaned = stripped.strip()
+    cleaned = re.sub(r"(?<=[a-z])Live(?:\s+Extension)?\s*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"\s+Live\s+Extension\s*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"(?<=[a-z])Link\s*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"(?<=[a-z])Live\s*$", "", cleaned, flags=re.IGNORECASE).strip()
+    return _MULTI_SPACE.sub(" ", cleaned).strip()
+
+
 def _clean_title_line(line: str) -> str:
-    cleaned = _FORMATTING.sub("", line).strip()
-    return _LINK_SUFFIX.sub("", cleaned).strip()
+    return sanitize_project_name(line)
+
+
+def _fix_ocr_spacing(text: str) -> str:
+    prev = None
+    while prev != text:
+        prev = text
+        text = _MERGED_OCR.sub(r"\1\2", text)
+        text = _CAP_SPLIT.sub(r"\1\2\3", text)
+        text = _OCR_SPLIT.sub(r"\1\2", text)
+    return text
 
 
 def _name_match_key(name: str) -> str:
