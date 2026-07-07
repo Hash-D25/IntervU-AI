@@ -34,16 +34,24 @@ class Settings(BaseSettings):
     resume_storage_backend: str = "local"
     resume_upload_dir: str = "uploads"
     resume_max_size_mb: int = 5
+    resume_parser: str = "hybrid"
     cloudinary_cloud_name: str = ""
     cloudinary_api_key: str = ""
     cloudinary_api_secret: str = ""
 
-    # LLM provider (OpenAI-compatible). Values are read now but only consumed
-    # once AI features land in a later iteration.
-    llm_provider: str = "openai"
-    llm_api_key: str = "changeme"
-    llm_base_url: str = "https://api.openai.com/v1"
-    llm_model: str = "gpt-4o-mini"
+    # LLM provider — primary (ollama | groq | gemini | openai) + optional fallback.
+    llm_provider: str = "ollama"
+    llm_api_key: str = "ollama"
+    llm_base_url: str = "http://localhost:11434/v1"
+    llm_model: str = "qwen3:8b"
+    llm_fallback_provider: str = "groq"
+    llm_fallback_api_key: str = ""
+    llm_fallback_base_url: str = "https://api.groq.com/openai/v1"
+    llm_fallback_model: str = "llama-3.1-8b-instant"
+    llm_max_resume_chars: int = 6000
+    llm_num_predict: int = 800
+    llm_disable_thinking: bool = True
+    llm_primary_timeout_seconds: float = 15.0
 
     # Vector store
     chroma_host: str = "localhost"

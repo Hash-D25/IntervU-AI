@@ -14,9 +14,10 @@ from uuid import UUID
 import cloudinary
 import cloudinary.uploader
 import cloudinary.utils
+import httpx
 
 from app.core.config import Settings
-from app.core.exceptions import BadRequestError
+from app.core.exceptions import BadRequestError, NotFoundError
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +35,10 @@ class FileStorageService(Protocol):
 
     async def delete(self, storage_key: str) -> None:
         """Remove a previously stored file if it exists."""
+        ...
+
+    async def fetch(self, storage_key: str) -> bytes:
+        """Load stored file bytes for parsing."""
         ...
 
 
@@ -68,9 +73,16 @@ class LocalFileStorageService:
         if absolute_path.is_file():
             absolute_path.unlink()
 
+    async def fetch(self, storage_key: str) -> bytes:
+        absolute_path = self._root / Path(storage_key)
+        if not absolute_path.is_file():
+            raise NotFoundError("Resume file not found on disk")
+        return absolute_path.read_bytes()
+
 
 class CloudinaryFileStorageService:
     def __init__(self, settings: Settings) -> None:
+        self._settings = settings
         configure_cloudinary(settings)
 
     async def save(self, *, user_id: UUID, content: bytes) -> StoredFile:
@@ -97,6 +109,13 @@ class CloudinaryFileStorageService:
             resource_type="raw",
             invalidate=True,
         )
+
+    async def fetch(self, storage_key: str) -> bytes:
+        url = build_cloudinary_file_url(storage_key, self._settings)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(url)
+            response.raise_for_status()
+            return response.content
 
 
 def create_file_storage_service(settings: Settings) -> FileStorageService:

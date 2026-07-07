@@ -10,6 +10,7 @@ from app.features.auth.models import RefreshToken
 from app.features.feedback.models import FeedbackReport
 from app.features.interview.models import Answer, Interview, Question
 from app.features.resume.models import Resume
+from app.features.resume.parsed_models import ResumeParsedProfile
 from app.features.user.models import User
 
 __all__ = [
@@ -20,5 +21,6 @@ __all__ = [
     "Question",
     "RefreshToken",
     "Resume",
+    "ResumeParsedProfile",
     "User",
 ]

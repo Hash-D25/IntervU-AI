@@ -15,6 +15,7 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/02-database-layer.md`](./implementation/02-database-layer.md) | Entities, ORM models, mixins, base + concrete repositories, initial migration, tests. |
 | [`implementation/03-authentication.md`](./implementation/03-authentication.md) | JWT auth, rotating refresh tokens, register/login/logout, protected routes. |
 | [`implementation/04-resume-upload.md`](./implementation/04-resume-upload.md) | PDF upload, validation, local storage, metadata in DB. |
+| [`implementation/05-resume-parsing.md`](./implementation/05-resume-parsing.md) | PDF parsing, structured profile storage, pluggable parsers. |
 
 New iterations append a new numbered file here.
 

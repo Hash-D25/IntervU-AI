@@ -34,3 +34,11 @@ async def test_delete_removes_file(storage: LocalFileStorageService) -> None:
 
     absolute = storage._root / stored.key
     assert not absolute.is_file()
+
+
+async def test_fetch_returns_saved_bytes(storage: LocalFileStorageService) -> None:
+    user_id = uuid4()
+    stored = await storage.save(user_id=user_id, content=MINIMAL_PDF)
+
+    fetched = await storage.fetch(stored.key)
+    assert fetched == MINIMAL_PDF

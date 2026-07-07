@@ -42,6 +42,11 @@ class PayloadTooLargeError(AppError):
         super().__init__(message, status_code=413)
 
 
+class ParseError(AppError):
+    def __init__(self, message: str = "Failed to parse resume") -> None:
+        super().__init__(message, status_code=422)
+
+
 async def _handle_app_error(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
