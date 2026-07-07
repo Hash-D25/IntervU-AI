@@ -5,6 +5,8 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import BadRequestError, NotFoundError
+from app.features.evaluation.schemas import AnswerEvaluationResult
+from app.features.evaluation.service import AnswerEvaluationService
 from app.features.interview.execution.engine import InterviewEngine
 from app.features.interview.execution.project_selection import build_execution_hints
 from app.features.interview.execution.question_provider import PhaseQuestionProvider
@@ -40,6 +42,7 @@ class InterviewExecutionService:
         answers: AnswerRepository,
         parsed_resumes: ResumeParsedProfileRepository,
         question_provider: PhaseQuestionProvider,
+        evaluation_service: AnswerEvaluationService,
     ) -> None:
         self._session = session
         self._interviews = interviews
@@ -47,6 +50,7 @@ class InterviewExecutionService:
         self._answers = answers
         self._parsed_resumes = parsed_resumes
         self._question_provider = question_provider
+        self._evaluation_service = evaluation_service
         self._engine = InterviewEngine()
 
     async def get_snapshot(self, *, user_id: UUID, interview_id: UUID) -> EngineSnapshot:
@@ -78,7 +82,16 @@ class InterviewExecutionService:
             raise BadRequestError("No current question to answer")
 
         context = self._engine.submit_answer(context, transcript)
-        await self._persist_answer(current.id, transcript)
+        answer = await self._persist_answer(current.id, transcript)
+        evaluation = await self._evaluation_service.evaluate_and_persist(
+            answer_id=answer.id,
+            context=AnswerEvaluationService.build_context(
+                interview=interview,
+                question=current,
+                transcript=transcript,
+            ),
+        )
+        context = self._attach_evaluation(context, current.id, evaluation)
         if context.status == EngineStatus.IN_PROGRESS and not context.awaiting_answer:
             context = await self._prepare_current_phase_question(interview, context)
         return await self._persist(interview, context)
@@ -129,13 +142,28 @@ class InterviewExecutionService:
         )
         return await self._questions.add(entity)
 
-    async def _persist_answer(self, question_id: UUID, transcript: str) -> None:
+    async def _persist_answer(self, question_id: UUID, transcript: str) -> Answer:
         existing = await self._answers.get_for_question(question_id)
+        cleaned = transcript.strip()
         if existing is not None:
-            existing.transcript = transcript.strip()
+            existing.transcript = cleaned
             await self._session.flush()
-            return
-        await self._answers.add(Answer(question_id=question_id, transcript=transcript.strip()))
+            return existing
+        return await self._answers.add(Answer(question_id=question_id, transcript=cleaned))
+
+    @staticmethod
+    def _attach_evaluation(
+        context: SessionContext,
+        question_id: UUID,
+        evaluation: AnswerEvaluationResult,
+    ) -> SessionContext:
+        questions = [
+            question.model_copy(update={"evaluation": evaluation})
+            if question.id == question_id
+            else question
+            for question in context.questions
+        ]
+        return context.model_copy(update={"questions": questions})
 
     async def _build_generation_context(
         self,

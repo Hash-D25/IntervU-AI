@@ -5,10 +5,12 @@ from uuid import UUID
 from fastapi import APIRouter, status
 
 from app.features.auth.dependencies import CurrentUserDep
+from app.features.evaluation.dependencies import AnswerEvaluationServiceDep
 from app.features.interview.dependencies import InterviewExecutionServiceDep, InterviewServiceDep
 from app.features.interview.execution_mapper import to_execution_snapshot_response
 from app.features.interview.mapper import to_interview_response
 from app.features.interview.schemas import (
+    AnswerEvaluationResponse,
     CreateInterviewRequest,
     ExecutionSnapshotResponse,
     InterviewResponse,
@@ -84,4 +86,22 @@ async def submit_interview_answer(
         transcript=body.transcript,
     )
     return to_execution_snapshot_response(snapshot)
+
+
+@router.get(
+    "/{interview_id}/questions/{question_id}/evaluation",
+    response_model=AnswerEvaluationResponse,
+)
+async def get_answer_evaluation(
+    interview_id: UUID,
+    question_id: UUID,
+    current_user: CurrentUserDep,
+    evaluation_service: AnswerEvaluationServiceDep,
+) -> AnswerEvaluationResponse:
+    result = await evaluation_service.get_for_question(
+        user_id=current_user.id,
+        interview_id=interview_id,
+        question_id=question_id,
+    )
+    return AnswerEvaluationResponse.model_validate(result.model_dump())
 

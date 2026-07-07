@@ -12,6 +12,13 @@ from sqlalchemy.pool import StaticPool
 
 from app.db.registry import Base
 from app.db.session import get_session
+from app.features.evaluation.dependencies import get_answer_evaluator
+from app.features.evaluation.schemas import (
+    REQUIRED_DIMENSIONS,
+    AnswerEvaluationResult,
+    DimensionScore,
+    EvaluationContext,
+)
 from app.features.interview.dependencies import get_phase_question_provider
 from app.features.interview.execution.question_provider import build_intro_question
 from app.features.interview.execution.schemas import InterviewPhase, SessionQuestion
@@ -75,6 +82,27 @@ class FakePhaseQuestionProvider:
         )
 
 
+class FakeAnswerEvaluator:
+    name = "fake"
+
+    async def evaluate(self, context: EvaluationContext) -> AnswerEvaluationResult:
+        scores = [
+            DimensionScore(
+                dimension=dim,
+                score=7.5,
+                rationale="Answer addresses the question with relevant detail.",
+            )
+            for dim in REQUIRED_DIMENSIONS
+        ]
+        return AnswerEvaluationResult(
+            scores=scores,
+            overall_score=7.5,
+            strengths=["Clear communication"],
+            improvements=["Add concrete metrics"],
+            evaluator_name=self.name,
+        )
+
+
 @pytest.fixture
 async def client(tmp_path: Path) -> AsyncGenerator[AsyncClient]:
     upload_root = tmp_path / "uploads"
@@ -99,6 +127,7 @@ async def client(tmp_path: Path) -> AsyncGenerator[AsyncClient]:
     )
     app.dependency_overrides[get_resume_parser] = lambda: FakeResumeParser()
     app.dependency_overrides[get_phase_question_provider] = lambda: FakePhaseQuestionProvider()
+    app.dependency_overrides[get_answer_evaluator] = lambda: FakeAnswerEvaluator()
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
@@ -178,3 +207,8 @@ async def test_submit_answer_advances_to_next_phase(client: AsyncClient) -> None
     assert body["current_question"]["phase"] == "resume"
     assert len(body["previous_questions"]) == 1
     assert body["previous_questions"][0]["answered"] is True
+    evaluation = body["previous_questions"][0]["evaluation"]
+    assert evaluation is not None
+    assert evaluation["overall_score"] == 7.5
+    assert len(evaluation["scores"]) == 5
+    assert evaluation["evaluator_name"] == "fake"

@@ -56,6 +56,7 @@ class Settings(BaseSettings):
     job_description_analyzer: str = "llm"
     job_description_max_size_mb: int = 5
     question_generator: str = "llm"
+    answer_evaluator: str = "llm"
 
     # Vector store
     chroma_host: str = "localhost"

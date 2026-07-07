@@ -20,6 +20,7 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/07-interview-creation.md`](./implementation/07-interview-creation.md) | Interview session creation, metadata, plan, state machine seed. |
 | [`implementation/08-question-generator.md`](./implementation/08-question-generator.md) | Category-based question generation (DSA, project, behavioral, CS). |
 | [`implementation/09-interview-execution-engine.md`](./implementation/09-interview-execution-engine.md) | Phase state machine, session context, start/answer execution API. |
+| [`implementation/10-answer-evaluation.md`](./implementation/10-answer-evaluation.md) | Per-answer scoring across five dimensions with pluggable evaluators. |
 
 New iterations append a new numbered file here.
 

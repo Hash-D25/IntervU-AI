@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.features.evaluation.schemas import AnswerEvaluationResult
 from app.features.interview.planning.schemas import InterviewType
 
 
@@ -35,6 +36,7 @@ class SessionQuestion(BaseModel):
     evaluation_rubric: list[str] = Field(default_factory=list)
     answered: bool = False
     answer_transcript: str | None = None
+    evaluation: AnswerEvaluationResult | None = None
 
 
 class SessionContext(BaseModel):

@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.core.container import SessionDep, SettingsDep
+from app.features.evaluation.dependencies import AnswerEvaluationServiceDep
 from app.features.interview.execution.question_provider import PhaseQuestionProvider
 from app.features.interview.execution.service import InterviewExecutionService
 from app.features.interview.planning.factory import create_interview_planner
@@ -66,6 +67,7 @@ def get_interview_execution_service(
     answers: Annotated[AnswerRepository, Depends(get_answer_repository)],
     parsed_resumes: Annotated[ResumeParsedProfileRepository, Depends(get_parsed_resume_repository)],
     question_provider: Annotated[PhaseQuestionProvider, Depends(get_phase_question_provider)],
+    evaluation_service: AnswerEvaluationServiceDep,
 ) -> InterviewExecutionService:
     return InterviewExecutionService(
         session,
@@ -74,6 +76,7 @@ def get_interview_execution_service(
         answers,
         parsed_resumes,
         question_provider,
+        evaluation_service,
     )
 
 

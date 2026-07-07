@@ -135,4 +135,4 @@ pytest tests/unit/test_interview_engine.py tests/integration/test_interview_exec
 
 ## What's next
 
-Answer evaluation, adaptive follow-ups, and frontend interview UI.
+Answer evaluation per submitted response, then interview-level feedback reports.

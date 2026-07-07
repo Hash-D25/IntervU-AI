@@ -20,6 +20,7 @@ from app.features.interview.planning.schemas import InterviewType, SessionState
 JsonPayload = JSON().with_variant(JSONB, "postgresql")
 
 if TYPE_CHECKING:
+    from app.features.evaluation.models import AnswerEvaluation
     from app.features.feedback.models import FeedbackReport
     from app.features.user.models import User
 
@@ -109,3 +110,8 @@ class Answer(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     transcript: Mapped[str] = mapped_column(Text)
 
     question: Mapped["Question"] = relationship(back_populates="answer")
+    evaluation: Mapped["AnswerEvaluation | None"] = relationship(
+        back_populates="answer",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )

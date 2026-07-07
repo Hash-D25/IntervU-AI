@@ -5,6 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.features.evaluation.schemas import AnswerEvaluationResult
 from app.features.interview.execution.schemas import (
     EngineStatus,
     InterviewPhase,
@@ -30,6 +31,10 @@ class CreateInterviewRequest(BaseModel):
 
 class SubmitAnswerRequest(BaseModel):
     transcript: str = Field(min_length=1, max_length=20_000)
+
+
+class AnswerEvaluationResponse(AnswerEvaluationResult):
+    """Structured per-answer evaluation scores."""
 
 
 class ExecutionSnapshotResponse(BaseModel):
