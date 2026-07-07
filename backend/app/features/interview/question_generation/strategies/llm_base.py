@@ -46,4 +46,4 @@ class LlmQuestionStrategy:
         )
         raw_response = await self._llm.generate([ChatMessage(role="user", content=prompt)])
         parsed = parse_question_response(raw_response, self._category)
-        return GeneratedQuestionValidator.validate(parsed)
+        return GeneratedQuestionValidator.validate(parsed, context=context)

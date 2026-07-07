@@ -79,6 +79,102 @@ def align_project_names(
     return aligned
 
 
+def align_question_text(text: str, project_names: list[str]) -> str:
+    """Replace noisy project-name variants in generated question text."""
+    if not text or not project_names:
+        return text
+
+    canonical = sorted(
+        {sanitize_project_name(name) for name in project_names if name.strip()},
+        key=len,
+        reverse=True,
+    )
+    result = text
+    for name in canonical:
+        marker = _project_marker(name)
+        if not marker or marker.lower() not in result.lower():
+            continue
+        pattern = re.compile(
+            re.escape(marker) + r"[\w\s:.\-–—]{0,140}?(?="
+            r"[?.!,;)]|\s+(?:and|or|versus|vs\.?|with|using|in|for|that|where|when)\b|$)",
+            re.IGNORECASE,
+        )
+
+        def _replacer(match: re.Match[str], *, canonical_name: str = name) -> str:
+            fragment = match.group(0).strip()
+            cleaned = sanitize_project_name(fragment)
+            name_key = _name_match_key(canonical_name)
+            cleaned_key = _name_match_key(cleaned)
+            if (
+                cleaned_key == name_key
+                or name_key in cleaned_key
+                or cleaned_key in name_key
+            ):
+                return canonical_name
+            return fragment
+
+        result = pattern.sub(_replacer, result)
+        result = re.sub(
+            re.escape(name) + r"\s+Link\b",
+            name,
+            result,
+            flags=re.IGNORECASE,
+        )
+    return _MULTI_SPACE.sub(" ", result).strip()
+
+
+def normalize_project_references_in_text(text: str, project_names: list[str]) -> str:
+    """Align, normalize dash variants, and unwrap quoted project names."""
+    if not text or not project_names:
+        return text
+
+    result = align_question_text(text, project_names)
+    canonical = sorted(
+        {sanitize_project_name(name) for name in project_names if name.strip()},
+        key=len,
+        reverse=True,
+    )
+    for name in canonical:
+        result = _normalize_dash_variants(result, name)
+        for quote in ("'", '"'):
+            result = result.replace(f"{quote}{name}{quote}", name)
+    return _MULTI_SPACE.sub(" ", result).strip()
+
+
+def _normalize_dash_variants(text: str, canonical: str) -> str:
+    if " - " in canonical:
+        left, right = canonical.split(" - ", 1)
+        pattern = re.compile(
+            re.escape(left) + r"\s*[-–—]\s*" + re.escape(right),
+            re.IGNORECASE,
+        )
+        return pattern.sub(canonical, text)
+    if ": " in canonical:
+        left, right = canonical.split(": ", 1)
+        pattern = re.compile(
+            re.escape(left) + r"\s*:\s*" + re.escape(right),
+            re.IGNORECASE,
+        )
+        return pattern.sub(canonical, text)
+    return text
+
+
+def project_marker(name: str) -> str:
+    return _project_marker(name)
+
+
+def name_match_key(name: str) -> str:
+    return _name_match_key(name)
+
+
+def _project_marker(name: str) -> str:
+    for sep in (" - ", ": ", ":"):
+        if sep in name:
+            return name.split(sep, 1)[0].strip()
+    words = name.split()
+    return words[0] if words else name
+
+
 def _best_name_match(name: str, references: list[str], used: set[int]) -> int | None:
     key = _name_match_key(name)
     best_idx: int | None = None
@@ -132,7 +228,7 @@ def _fix_ocr_spacing(text: str) -> str:
 def _name_match_key(name: str) -> str:
     key = re.sub(r"\s+", " ", name.strip().casefold())
     key = re.sub(r"\s*:\s*", ": ", key)
-    key = re.sub(r"\s*-\s*", " - ", key)
+    key = re.sub(r"\s*[-–—]\s*", " - ", key)
     return key
 
 

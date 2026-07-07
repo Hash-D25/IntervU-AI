@@ -2,6 +2,7 @@
 
 from app.features.resume.parsing.project_names import (
     align_project_names,
+    align_question_text,
     extract_project_names,
     sanitize_project_name,
 )
@@ -85,3 +86,37 @@ def test_sanitize_project_name_fixes_ocr_and_link_artifacts() -> None:
         == "GitHub Repository Browser : Private Repo Viewer"
     )
     assert sanitize_project_name("Social Media App Live") == "Social Media App"
+
+
+def test_align_question_text_replaces_noisy_project_reference() -> None:
+    names = [
+        "UncDoIt - AI Web Navigation Assistant",
+        "ytNotes : YouTube Notes Chrome Extension",
+    ]
+    text = (
+        "Describe the architecture of using a stateful vs stateless approach for web "
+        "navigation in UncDoIt - AI Web Navigation Assistant Link."
+    )
+    aligned = align_question_text(text, names)
+    assert "UncDoIt - AI Web Navigation Assistant Link" not in aligned
+    assert "UncDoIt - AI Web Navigation Assistant" in aligned
+
+
+def test_align_question_text_preserves_unrelated_content() -> None:
+    names = ["UncDoIt - AI Web Navigation Assistant"]
+    text = "Explain REST API design patterns in FastAPI."
+    assert align_question_text(text, names) == text
+
+
+def test_normalize_project_references_fixes_dashes_and_quotes() -> None:
+    from app.features.resume.parsing.project_names import normalize_project_references_in_text
+
+    names = ["UncDoIt - AI Web Navigation Assistant"]
+    text = (
+        "Walk me through the system architecture of "
+        "'UncDoIt – AI Web Navigation Assistant'."
+    )
+    normalized = normalize_project_references_in_text(text, names)
+    assert "–" not in normalized
+    assert "'UncDoIt" not in normalized
+    assert "UncDoIt - AI Web Navigation Assistant" in normalized

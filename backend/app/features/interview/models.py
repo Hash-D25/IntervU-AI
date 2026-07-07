@@ -66,6 +66,7 @@ class Interview(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     interview_metadata: Mapped[dict[str, object]] = mapped_column(JsonPayload, default=dict)
     interview_plan: Mapped[dict[str, object]] = mapped_column(JsonPayload, default=dict)
+    execution_context: Mapped[dict[str, object]] = mapped_column(JsonPayload, default=dict)
 
     user: Mapped["User"] = relationship(back_populates="interviews")
     questions: Mapped[list["Question"]] = relationship(

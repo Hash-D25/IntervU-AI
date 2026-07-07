@@ -19,7 +19,7 @@ Rules:
 - Use STAR-friendly wording (situation, action, result).
 - Tie to experience, teamwork, ownership, or communication when possible.
 - expected_topics: 2-5 themes the answer should cover.
-- evaluation_rubric: 3-5 concise scoring criteria.
+- evaluation_rubric: 3-5 concise scoring criteria (required — never return an empty list).
 
 Context:
 {context_json}

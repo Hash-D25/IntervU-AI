@@ -19,6 +19,7 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/06-job-description-processing.md`](./implementation/06-job-description-processing.md) | JD text/PDF analysis → skills, technologies, responsibilities, seniority. |
 | [`implementation/07-interview-creation.md`](./implementation/07-interview-creation.md) | Interview session creation, metadata, plan, state machine seed. |
 | [`implementation/08-question-generator.md`](./implementation/08-question-generator.md) | Category-based question generation (DSA, project, behavioral, CS). |
+| [`implementation/09-interview-execution-engine.md`](./implementation/09-interview-execution-engine.md) | Phase state machine, session context, start/answer execution API. |
 
 New iterations append a new numbered file here.
 

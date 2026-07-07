@@ -5,6 +5,12 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.features.interview.execution.schemas import (
+    EngineStatus,
+    InterviewPhase,
+    SessionContext,
+    SessionQuestion,
+)
 from app.features.interview.models import InterviewStatus
 from app.features.interview.planning.schemas import (
     InterviewMetadata,
@@ -20,6 +26,19 @@ class CreateInterviewRequest(BaseModel):
     target_role: str = Field(min_length=1, max_length=255)
     interview_type: InterviewType
     job_description: str | None = Field(default=None, max_length=50_000)
+
+
+class SubmitAnswerRequest(BaseModel):
+    transcript: str = Field(min_length=1, max_length=20_000)
+
+
+class ExecutionSnapshotResponse(BaseModel):
+    status: EngineStatus
+    phase: InterviewPhase | None
+    current_question: SessionQuestion | None
+    previous_questions: list[SessionQuestion] = Field(default_factory=list)
+    allowed_transitions: list[InterviewPhase] = Field(default_factory=list)
+    session_context: SessionContext
 
 
 class InterviewResponse(BaseModel):

@@ -6,8 +6,9 @@ Responsibility: manage a session as an **explicit state machine** (not raw chat
 history), driving contextual questions and adaptive follow-ups based on the
 candidate's answers, parsed resume, and optional target job description.
 
-This iteration creates interview sessions, stores metadata and an interview plan,
-and seeds a future-ready state machine without generating questions yet.
+This feature creates interview sessions, stores metadata and an interview plan,
+generates questions by category, and runs a phase-based execution engine.
 
-Question generation lives under `question_generation/` with category-specific
-strategies (DSA, project, behavioral, CS fundamentals) driven by the interview plan.
+- `planning/` — session blueprint and legacy planning state snapshot
+- `question_generation/` — category-specific LLM strategies (DSA, project, behavioral, CS)
+- `execution/` — explicit phase engine (`INTRODUCTION` … `FINAL`), session context, API
