@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.features.evaluation.schemas import AnswerEvaluationResult
+from app.features.interview.memory.schemas import InterviewMemory
 from app.features.interview.planning.schemas import InterviewType
 
 
@@ -54,6 +55,7 @@ class SessionContext(BaseModel):
     phase_sequence: list[InterviewPhase] = Field(default_factory=list)
     questions_per_phase: dict[InterviewPhase, int] = Field(default_factory=dict)
     questions: list[SessionQuestion] = Field(default_factory=list)
+    memory: InterviewMemory | None = None
     awaiting_answer: bool = False
     started_at: datetime | None = None
     completed_at: datetime | None = None

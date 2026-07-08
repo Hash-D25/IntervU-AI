@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 
 from app.features.evaluation.schemas import AnswerEvaluationResult
 from app.features.interview.execution.schemas import InterviewPhase
+from app.features.interview.memory.schemas import InterviewMemory
 
 
 class ExtractedClaim(BaseModel):
@@ -27,6 +28,7 @@ class FollowUpContext(BaseModel):
     max_depth: int = Field(default=1, ge=0)
     interview_follow_ups_used: int = Field(default=0, ge=0)
     max_interview_follow_ups: int = Field(default=3, ge=0)
+    memory: InterviewMemory | None = None
 
 
 class GeneratedFollowUp(BaseModel):

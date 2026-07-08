@@ -2,6 +2,7 @@
 
 import json
 
+from app.features.interview.memory.prompt_context import memory_prompt_payload
 from app.features.interview.question_generation.schemas import QuestionGenerationContext
 from app.features.resume.parsing.project_names import sanitize_project_name
 
@@ -57,6 +58,9 @@ def build_prompt_context(context: QuestionGenerationContext) -> str:
             "projects_already_covered": context.projects_already_covered,
             "previous_question_topics": context.previous_question_topics,
         }
+    memory_payload = memory_prompt_payload(context.memory)
+    if memory_payload is not None:
+        payload["interview_memory"] = memory_payload
     return json.dumps(payload, separators=(",", ":"))
 
 

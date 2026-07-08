@@ -92,6 +92,7 @@ class FollowUpService:
             max_depth=self._max_per_answer,
             interview_follow_ups_used=interview_follow_ups,
             max_interview_follow_ups=self._max_per_interview,
+            memory=session.memory,
         )
 
         claims = await self._claim_extractor.extract(context)

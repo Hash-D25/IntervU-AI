@@ -74,6 +74,9 @@ class Settings(BaseSettings):
     max_follow_ups_per_answer: int = 1
     max_follow_ups_per_interview: int = 3
     follow_up_on_phases: str = "resume,projects,cs_fundamentals,behavioral"
+    interview_memory: str = "session"
+    interview_memory_max_answers: int = 8
+    interview_memory_excerpt_chars: int = 280
 
     # Vector store
     chroma_host: str = "localhost"

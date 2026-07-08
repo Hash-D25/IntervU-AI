@@ -3,6 +3,7 @@
 import json
 
 from app.features.interview.follow_up.schemas import ExtractedClaim, FollowUpContext
+from app.features.interview.memory.prompt_context import memory_prompt_payload
 
 
 def build_claim_prompt_context(context: FollowUpContext) -> str:
@@ -31,6 +32,9 @@ def build_claim_prompt_context(context: FollowUpContext) -> str:
             ),
         },
     }
+    memory_payload = memory_prompt_payload(context.memory)
+    if memory_payload is not None:
+        payload["interview_memory"] = memory_payload
     return json.dumps(payload, separators=(",", ":"))
 
 
@@ -64,6 +68,14 @@ def build_follow_up_prompt_context(
                 "the answer. Never probe a question caveat (e.g. 'assuming no "
                 "deletes'). One question only. Keep it concise and interview-natural."
             ),
+            "memory": (
+                "When useful, callback to earlier answers using interview_memory "
+                "(e.g. 'You mentioned JWT earlier...'). Only reference "
+                "notable_mentions / key_claims that appear in memory."
+            ),
         },
     }
+    memory_payload = memory_prompt_payload(context.memory)
+    if memory_payload is not None:
+        payload["interview_memory"] = memory_payload
     return json.dumps(payload, separators=(",", ":"))

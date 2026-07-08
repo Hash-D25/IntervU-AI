@@ -5,6 +5,7 @@ from enum import StrEnum
 from pydantic import BaseModel, Field
 
 from app.features.interview.execution.schemas import InterviewPhase
+from app.features.interview.memory.schemas import InterviewMemory
 from app.features.interview.planning.schemas import InterviewPlan, InterviewType
 from app.features.job_description.processing.schemas import ParsedJobDescription
 from app.features.resume.parsing.schemas import ParsedResume
@@ -45,6 +46,7 @@ class QuestionGenerationContext(BaseModel):
     comparison_project_names: list[str] = Field(default_factory=list)
     projects_already_covered: list[str] = Field(default_factory=list)
     previous_question_topics: list[str] = Field(default_factory=list)
+    memory: InterviewMemory | None = None
 
 
 class QuestionGenerationResult(BaseModel):

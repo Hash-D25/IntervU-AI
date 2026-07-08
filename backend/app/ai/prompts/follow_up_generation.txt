@@ -19,6 +19,8 @@ Rules:
 - Do not probe question premises/assumptions — only probe which candidate stated.
 - Keep the tone professional and conversational.
 - Use the candidate's own terms when possible.
+- When interview_memory is present, you may callback to earlier answers
+  (e.g. "You mentioned JWT earlier...") using only notable_mentions / key_claims.
 - probed_claims must quote/paraphrase answer content only.
 
 Context:

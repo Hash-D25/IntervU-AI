@@ -20,6 +20,9 @@ Rules:
 - Tie to experience, teamwork, ownership, or communication when possible.
 - expected_topics: 2-5 themes the answer should cover.
 - evaluation_rubric: 3-5 concise scoring criteria (required — never return an empty list).
+- When interview_memory is present, prefer natural callbacks to earlier answers
+  (e.g. "You mentioned JWT earlier...") using only notable_mentions / recent_answers.
+  Never invent prior statements.
 
 Context:
 {context_json}

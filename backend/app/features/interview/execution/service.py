@@ -19,6 +19,7 @@ from app.features.interview.execution.schemas import (
 )
 from app.features.interview.follow_up.schemas import GeneratedFollowUp
 from app.features.interview.follow_up.service import FollowUpService
+from app.features.interview.memory.protocols import InterviewMemoryBuilder
 from app.features.interview.models import Answer, Interview, InterviewStatus, Question, QuestionKind
 from app.features.interview.planning.schemas import InterviewMetadata, InterviewPlan
 from app.features.interview.question_generation.schemas import (
@@ -46,6 +47,7 @@ class InterviewExecutionService:
         question_provider: PhaseQuestionProvider,
         evaluation_service: AnswerEvaluationService,
         follow_up_service: FollowUpService,
+        memory_builder: InterviewMemoryBuilder,
     ) -> None:
         self._session = session
         self._interviews = interviews
@@ -55,6 +57,7 @@ class InterviewExecutionService:
         self._question_provider = question_provider
         self._evaluation_service = evaluation_service
         self._follow_up_service = follow_up_service
+        self._memory_builder = memory_builder
         self._engine = InterviewEngine()
 
     async def get_snapshot(self, *, user_id: UUID, interview_id: UUID) -> EngineSnapshot:
@@ -97,6 +100,7 @@ class InterviewExecutionService:
             ),
         )
         context = self._attach_evaluation(context, current.id, evaluation)
+        context = self._refresh_memory(context)
         answered = next(q for q in context.questions if q.id == current.id)
 
         if context.status == EngineStatus.IN_PROGRESS and not context.awaiting_answer:
@@ -227,6 +231,9 @@ class InterviewExecutionService:
         ]
         return context.model_copy(update={"questions": questions})
 
+    def _refresh_memory(self, context: SessionContext) -> SessionContext:
+        return context.model_copy(update={"memory": self._memory_builder.rebuild(context)})
+
     async def _build_generation_context(
         self,
         interview: Interview,
@@ -249,12 +256,14 @@ class InterviewExecutionService:
             achievements=parsed_profile.achievements,
         )
         hints: dict[str, object] = {}
+        memory = None
         if session_context is not None:
             hints = build_execution_hints(
                 session=session_context,
                 project_names=[project.name for project in resume.projects],
                 experience_titles=[entry.title for entry in resume.experience],
             )
+            memory = session_context.memory
         return QuestionGenerationContext(
             company_name=metadata.company_name,
             target_role=metadata.target_role,
@@ -262,6 +271,7 @@ class InterviewExecutionService:
             interview_plan=plan,
             resume=resume,
             job_description_text=interview.job_description,
+            memory=memory,
             **hints,
         )
 
