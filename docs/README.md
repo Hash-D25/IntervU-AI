@@ -22,6 +22,7 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/09-interview-execution-engine.md`](./implementation/09-interview-execution-engine.md) | Phase state machine, session context, start/answer execution API. |
 | [`implementation/10-answer-evaluation.md`](./implementation/10-answer-evaluation.md) | Per-answer scoring across five dimensions with pluggable evaluators. |
 | [`implementation/11-feedback-engine.md`](./implementation/11-feedback-engine.md) | Coach-style report: strengths, weaknesses, recommendations, roadmap. |
+| [`implementation/12-voice-pipeline.md`](./implementation/12-voice-pipeline.md) | Microphone capture, STT, transcript generation (audio separate from interview). |
 
 New iterations append a new numbered file here.
 

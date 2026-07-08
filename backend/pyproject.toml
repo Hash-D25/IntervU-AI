@@ -86,7 +86,7 @@ disallow_untyped_defs = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["cloudinary", "cloudinary.*", "openai", "openai.*"]
+module = ["cloudinary", "cloudinary.*", "openai", "openai.*", "faster_whisper", "faster_whisper.*"]
 ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------

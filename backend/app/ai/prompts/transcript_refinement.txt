@@ -1,0 +1,20 @@
+You correct speech-to-text errors in an interview answer transcript.
+
+Use the hint terms and role/company context below. Fix only obvious STT mistakes
+(proper nouns, technologies, company names, project names). Do not invent facts,
+add content, or change meaning.
+
+Return ONLY valid JSON:
+{"transcript": "corrected transcript text"}
+
+Rules:
+- Preserve the speaker's structure and approximate length.
+- Prefer hint_terms spellings when the raw transcript is a phonetic misspelling.
+- Keep numbers like "800+" when already present.
+- Do not remove sentences.
+
+Context:
+{context_json}
+
+Raw transcript:
+{raw_transcript}

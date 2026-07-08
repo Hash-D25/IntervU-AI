@@ -58,13 +58,22 @@ class Settings(BaseSettings):
     question_generator: str = "llm"
     answer_evaluator: str = "llm"
     feedback_generator: str = "llm"
+    transcriber: str = "fake"
+    voice_max_size_mb: int = 25
+    whisper_model: str = "base"
+    whisper_language: str = ""
+    whisper_device: str = "cpu"
+    whisper_compute_type: str = "int8"
+    enable_vad: bool = True
+    max_audio_duration_seconds: int = 300
+    supported_audio_formats: str = "wav,mp3,m4a,webm,ogg"
+    return_word_timestamps: bool = False
+    whisper_beam_size: int = 5
+    transcript_refiner: str = "llm"
 
     # Vector store
     chroma_host: str = "localhost"
     chroma_port: int = 8001
-
-    # Voice / transcription
-    whisper_model: str = "base"
 
 
 @lru_cache
