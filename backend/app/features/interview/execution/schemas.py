@@ -37,6 +37,10 @@ class SessionQuestion(BaseModel):
     answered: bool = False
     answer_transcript: str | None = None
     evaluation: AnswerEvaluationResult | None = None
+    is_follow_up: bool = False
+    parent_question_id: UUID | None = None
+    follow_up_depth: int = Field(default=0, ge=0)
+    probed_claims: list[str] = Field(default_factory=list)
 
 
 class SessionContext(BaseModel):

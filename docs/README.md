@@ -23,6 +23,7 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/10-answer-evaluation.md`](./implementation/10-answer-evaluation.md) | Per-answer scoring across five dimensions with pluggable evaluators. |
 | [`implementation/11-feedback-engine.md`](./implementation/11-feedback-engine.md) | Coach-style report: strengths, weaknesses, recommendations, roadmap. |
 | [`implementation/12-voice-pipeline.md`](./implementation/12-voice-pipeline.md) | Microphone capture, STT, transcript generation (audio separate from interview). |
+| [`implementation/13-follow-up-questions.md`](./implementation/13-follow-up-questions.md) | Claim extraction + probing follow-ups with configurable depth. |
 
 New iterations append a new numbered file here.
 

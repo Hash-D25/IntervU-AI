@@ -15,6 +15,8 @@ class EvaluatedAnswerSummary(BaseModel):
     dimension_scores: list[DimensionScore] = Field(default_factory=list)
     answer_strengths: list[str] = Field(default_factory=list)
     answer_improvements: list[str] = Field(default_factory=list)
+    is_follow_up: bool = False
+    probed_claims: list[str] = Field(default_factory=list)
 
 
 class FeedbackContext(BaseModel):
@@ -26,6 +28,8 @@ class FeedbackContext(BaseModel):
     dimension_averages: dict[str, float] = Field(default_factory=dict)
     recurring_strengths: list[str] = Field(default_factory=list)
     recurring_improvements: list[str] = Field(default_factory=list)
+    weakest_answers: list[str] = Field(default_factory=list)
+    phases_covered: list[str] = Field(default_factory=list)
 
 
 class FeedbackResult(BaseModel):

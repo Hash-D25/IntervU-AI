@@ -1,4 +1,4 @@
-"""Feedback generation integration tests."""
+"""Follow-up generation integration tests."""
 
 from collections.abc import AsyncGenerator
 from io import BytesIO
@@ -19,16 +19,15 @@ from app.features.evaluation.schemas import (
     DimensionScore,
     EvaluationContext,
 )
-from app.features.feedback.dependencies import get_feedback_generator
-from app.features.feedback.schemas import FeedbackContext, FeedbackResult
 from app.features.interview.dependencies import get_follow_up_service, get_phase_question_provider
 from app.features.interview.execution.question_provider import build_intro_question
 from app.features.interview.execution.schemas import InterviewPhase, SessionQuestion
-from app.features.interview.follow_up.service import FollowUpService, parse_allowed_phases
-from app.features.interview.follow_up.strategies.noop import (
-    NoOpClaimExtractor,
-    NoOpFollowUpGenerator,
+from app.features.interview.follow_up.schemas import (
+    ExtractedClaim,
+    FollowUpContext,
+    GeneratedFollowUp,
 )
+from app.features.interview.follow_up.service import FollowUpService, parse_allowed_phases
 from app.features.interview.question_generation.schemas import QuestionGenerationContext
 from app.features.resume.dependencies import get_file_storage_service, get_resume_parser
 from app.features.resume.parsing.schemas import (
@@ -42,9 +41,9 @@ from app.main import create_app
 
 MINIMAL_PDF = b"%PDF-1.4\n%%EOF"
 _REGISTER = {
-    "email": "feedback-api-user@example.com",
+    "email": "followup-user@example.com",
     "password": "sup3rsecret",
-    "full_name": "Feedback User",
+    "full_name": "Follow Up User",
 }
 
 
@@ -53,10 +52,10 @@ class FakeResumeParser:
 
     async def parse(self, pdf_bytes: bytes, *, on_progress: object = None) -> ParsedResume:
         return ParsedResume(
-            skills=["Python", "FastAPI"],
-            projects=[ProjectEntry(name="UncDoIt", description="Undo/redo for docs")],
-            experience=[ExperienceEntry(title="Intern", company="Startup")],
-            technologies=["PostgreSQL"],
+            skills=["Python", "Redis"],
+            projects=[ProjectEntry(name="CacheService", description="Session cache")],
+            experience=[ExperienceEntry(title="Engineer", company="Acme")],
+            technologies=["Redis", "FastAPI"],
             education=[EducationEntry(institution="Example University", degree="B.Tech")],
             achievements=["Hackathon winner"],
         )
@@ -96,34 +95,51 @@ class FakeAnswerEvaluator:
         scores = [
             DimensionScore(
                 dimension=dim,
-                score=8.0,
-                rationale="Solid answer with relevant detail.",
+                score=7.5,
+                rationale="Answer addresses the question with relevant detail.",
             )
             for dim in REQUIRED_DIMENSIONS
         ]
         return AnswerEvaluationResult(
             scores=scores,
-            overall_score=8.0,
+            overall_score=7.5,
             strengths=["Clear communication"],
-            improvements=["Add more metrics"],
+            improvements=["Add concrete metrics"],
             evaluator_name=self.name,
         )
 
 
-class FakeFeedbackGenerator:
+class FakeClaimExtractor:
     name = "fake"
 
-    async def generate(self, context: FeedbackContext) -> FeedbackResult:
-        return FeedbackResult(
-            summary="Strong interview with clear communication and good project examples.",
-            strengths=["Clear communication", "Relevant project storytelling"],
-            weaknesses=["Could deepen technical tradeoff explanations"],
-            recommendations=["Practice system design out loud twice per week"],
-            learning_roadmap=[
-                "Week 1: review authentication and authorization patterns",
-                "Week 2: mock architecture discussions",
-            ],
-            overall_score=context.overall_average_score,
+    async def extract(self, context: FollowUpContext) -> list[ExtractedClaim]:
+        if "Redis" not in context.answer_transcript:
+            return []
+        return [
+            ExtractedClaim(
+                text="We used Redis.",
+                claim_type="technology",
+                probe_angle="Why Redis instead of Memcached",
+            )
+        ]
+
+
+class FakeFollowUpGenerator:
+    name = "fake"
+
+    async def generate(
+        self,
+        context: FollowUpContext,
+        *,
+        claims: list[ExtractedClaim],
+    ) -> GeneratedFollowUp | None:
+        return GeneratedFollowUp(
+            text="Why Redis instead of Memcached?",
+            category=context.category,
+            difficulty="medium",
+            expected_topics=["caching", "tradeoffs"],
+            evaluation_rubric=["depth", "reasoning"],
+            probed_claims=[claim.text for claim in claims],
             generator_name=self.name,
         )
 
@@ -153,14 +169,14 @@ async def client(tmp_path: Path) -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[get_resume_parser] = lambda: FakeResumeParser()
     app.dependency_overrides[get_phase_question_provider] = lambda: FakePhaseQuestionProvider()
     app.dependency_overrides[get_answer_evaluator] = lambda: FakeAnswerEvaluator()
+    # Allow follow-ups starting at introduction for a simple path after first answer.
     app.dependency_overrides[get_follow_up_service] = lambda: FollowUpService(
-        NoOpClaimExtractor(),
-        NoOpFollowUpGenerator(),
+        FakeClaimExtractor(),
+        FakeFollowUpGenerator(),
         max_follow_ups_per_answer=1,
         max_follow_ups_per_interview=3,
-        allowed_phases=parse_allowed_phases("resume,projects,cs_fundamentals,behavioral"),
+        allowed_phases=parse_allowed_phases("introduction,resume,projects"),
     )
-    app.dependency_overrides[get_feedback_generator] = lambda: FakeFeedbackGenerator()
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
@@ -179,7 +195,7 @@ async def _auth_headers(client: AsyncClient) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
 
 
-async def _create_interview_with_answer(client: AsyncClient, headers: dict[str, str]) -> str:
+async def _create_interview(client: AsyncClient, headers: dict[str, str]) -> str:
     upload = await client.post(
         "/api/v1/resumes/upload",
         headers=headers,
@@ -187,7 +203,6 @@ async def _create_interview_with_answer(client: AsyncClient, headers: dict[str, 
     )
     resume_id = upload.json()["id"]
     await client.post(f"/api/v1/resumes/{resume_id}/parse", headers=headers)
-
     created = await client.post(
         "/api/v1/interviews/",
         headers=headers,
@@ -198,38 +213,24 @@ async def _create_interview_with_answer(client: AsyncClient, headers: dict[str, 
             "interview_type": "technical",
         },
     )
-    interview_id = created.json()["id"]
+    return created.json()["id"]
+
+
+async def test_submit_answer_with_claim_asks_follow_up(client: AsyncClient) -> None:
+    headers = await _auth_headers(client)
+    interview_id = await _create_interview(client, headers)
     await client.post(f"/api/v1/interviews/{interview_id}/execution/start", headers=headers)
-    await client.post(
+
+    answered = await client.post(
         f"/api/v1/interviews/{interview_id}/execution/answer",
         headers=headers,
-        json={"transcript": "I am a backend engineer with FastAPI and PostgreSQL experience."},
-    )
-    return interview_id
-
-
-async def test_generate_feedback_returns_json_report(client: AsyncClient) -> None:
-    headers = await _auth_headers(client)
-    interview_id = await _create_interview_with_answer(client, headers)
-
-    generated = await client.post(
-        f"/api/v1/interviews/{interview_id}/feedback/generate",
-        headers=headers,
+        json={"transcript": "In that project we used Redis for session caching."},
     )
 
-    assert generated.status_code == 201
-    body = generated.json()
-    assert body["generator_name"] == "fake"
-    assert body["strengths"]
-    assert body["weaknesses"]
-    assert body["recommendations"]
-    assert body["learning_roadmap"]
-    assert body["overall_score"] == 8.0
-
-    fetched = await client.get(
-        f"/api/v1/interviews/{interview_id}/feedback",
-        headers=headers,
-    )
-    assert fetched.status_code == 200
-    assert fetched.json()["summary"] == body["summary"]
-    assert fetched.json()["recommendations"] == body["recommendations"]
+    assert answered.status_code == 200
+    body = answered.json()
+    assert body["phase"] == "introduction"
+    assert body["current_question"]["is_follow_up"] is True
+    assert body["current_question"]["text"] == "Why Redis instead of Memcached?"
+    assert body["current_question"]["probed_claims"] == ["We used Redis."]
+    assert body["previous_questions"][0]["answered"] is True

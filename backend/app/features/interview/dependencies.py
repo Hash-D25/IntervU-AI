@@ -8,6 +8,11 @@ from app.core.container import SessionDep, SettingsDep
 from app.features.evaluation.dependencies import AnswerEvaluationServiceDep
 from app.features.interview.execution.question_provider import PhaseQuestionProvider
 from app.features.interview.execution.service import InterviewExecutionService
+from app.features.interview.follow_up.factory import (
+    create_claim_extractor,
+    create_follow_up_generator,
+)
+from app.features.interview.follow_up.service import FollowUpService, parse_allowed_phases
 from app.features.interview.planning.factory import create_interview_planner
 from app.features.interview.planning.protocols import InterviewPlanner
 from app.features.interview.question_generation.factory import create_question_generator_strategies
@@ -50,6 +55,16 @@ def get_phase_question_provider(settings: SettingsDep) -> PhaseQuestionProvider:
     return PhaseQuestionProvider(strategies)
 
 
+def get_follow_up_service(settings: SettingsDep) -> FollowUpService:
+    return FollowUpService(
+        create_claim_extractor(settings),
+        create_follow_up_generator(settings),
+        max_follow_ups_per_answer=settings.max_follow_ups_per_answer,
+        max_follow_ups_per_interview=settings.max_follow_ups_per_interview,
+        allowed_phases=parse_allowed_phases(settings.follow_up_on_phases),
+    )
+
+
 def get_interview_service(
     session: SessionDep,
     interviews: Annotated[InterviewRepository, Depends(get_interview_repository)],
@@ -68,6 +83,7 @@ def get_interview_execution_service(
     parsed_resumes: Annotated[ResumeParsedProfileRepository, Depends(get_parsed_resume_repository)],
     question_provider: Annotated[PhaseQuestionProvider, Depends(get_phase_question_provider)],
     evaluation_service: AnswerEvaluationServiceDep,
+    follow_up_service: Annotated[FollowUpService, Depends(get_follow_up_service)],
 ) -> InterviewExecutionService:
     return InterviewExecutionService(
         session,
@@ -77,6 +93,7 @@ def get_interview_execution_service(
         parsed_resumes,
         question_provider,
         evaluation_service,
+        follow_up_service,
     )
 
 

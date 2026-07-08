@@ -19,9 +19,14 @@ from app.features.evaluation.schemas import (
     DimensionScore,
     EvaluationContext,
 )
-from app.features.interview.dependencies import get_phase_question_provider
+from app.features.interview.dependencies import get_follow_up_service, get_phase_question_provider
 from app.features.interview.execution.question_provider import build_intro_question
 from app.features.interview.execution.schemas import InterviewPhase, SessionQuestion
+from app.features.interview.follow_up.service import FollowUpService, parse_allowed_phases
+from app.features.interview.follow_up.strategies.noop import (
+    NoOpClaimExtractor,
+    NoOpFollowUpGenerator,
+)
 from app.features.interview.question_generation.schemas import QuestionGenerationContext
 from app.features.resume.dependencies import get_file_storage_service, get_resume_parser
 from app.features.resume.parsing.schemas import (
@@ -128,6 +133,13 @@ async def client(tmp_path: Path) -> AsyncGenerator[AsyncClient]:
     app.dependency_overrides[get_resume_parser] = lambda: FakeResumeParser()
     app.dependency_overrides[get_phase_question_provider] = lambda: FakePhaseQuestionProvider()
     app.dependency_overrides[get_answer_evaluator] = lambda: FakeAnswerEvaluator()
+    app.dependency_overrides[get_follow_up_service] = lambda: FollowUpService(
+        NoOpClaimExtractor(),
+        NoOpFollowUpGenerator(),
+        max_follow_ups_per_answer=1,
+        max_follow_ups_per_interview=3,
+        allowed_phases=parse_allowed_phases("resume,projects,cs_fundamentals,behavioral"),
+    )
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:

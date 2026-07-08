@@ -17,6 +17,8 @@ from app.features.interview.execution.schemas import (
     SessionContext,
     SessionQuestion,
 )
+from app.features.interview.follow_up.schemas import GeneratedFollowUp
+from app.features.interview.follow_up.service import FollowUpService
 from app.features.interview.models import Answer, Interview, InterviewStatus, Question, QuestionKind
 from app.features.interview.planning.schemas import InterviewMetadata, InterviewPlan
 from app.features.interview.question_generation.schemas import (
@@ -43,6 +45,7 @@ class InterviewExecutionService:
         parsed_resumes: ResumeParsedProfileRepository,
         question_provider: PhaseQuestionProvider,
         evaluation_service: AnswerEvaluationService,
+        follow_up_service: FollowUpService,
     ) -> None:
         self._session = session
         self._interviews = interviews
@@ -51,6 +54,7 @@ class InterviewExecutionService:
         self._parsed_resumes = parsed_resumes
         self._question_provider = question_provider
         self._evaluation_service = evaluation_service
+        self._follow_up_service = follow_up_service
         self._engine = InterviewEngine()
 
     async def get_snapshot(self, *, user_id: UUID, interview_id: UUID) -> EngineSnapshot:
@@ -81,6 +85,7 @@ class InterviewExecutionService:
         if current is None or current.id is None:
             raise BadRequestError("No current question to answer")
 
+        # Defer phase advance until after follow-up decision.
         context = self._engine.submit_answer(context, transcript)
         answer = await self._persist_answer(current.id, transcript)
         evaluation = await self._evaluation_service.evaluate_and_persist(
@@ -92,9 +97,60 @@ class InterviewExecutionService:
             ),
         )
         context = self._attach_evaluation(context, current.id, evaluation)
+        answered = next(q for q in context.questions if q.id == current.id)
+
         if context.status == EngineStatus.IN_PROGRESS and not context.awaiting_answer:
-            context = await self._prepare_current_phase_question(interview, context)
+            plan = InterviewPlan.model_validate(interview.interview_plan)
+            decision = await self._follow_up_service.decide(
+                session=context,
+                answered=answered,
+                plan=plan,
+            )
+            if decision.should_follow_up and decision.follow_up is not None:
+                context = await self._attach_follow_up(
+                    interview,
+                    context,
+                    parent=answered,
+                    follow_up=decision.follow_up,
+                )
+            else:
+                context = self._engine.advance_after_answer(context)
+                context = await self._prepare_current_phase_question(interview, context)
+
         return await self._persist(interview, context)
+
+    async def _attach_follow_up(
+        self,
+        interview: Interview,
+        context: SessionContext,
+        *,
+        parent: SessionQuestion,
+        follow_up: GeneratedFollowUp,
+    ) -> SessionContext:
+        root_id = parent.parent_question_id or parent.id
+        if root_id is None:
+            raise BadRequestError("Parent question is missing an id")
+        depth = parent.follow_up_depth + 1 if parent.is_follow_up else 1
+        question = SessionQuestion(
+            position=len(context.questions),
+            phase=parent.phase,
+            text=follow_up.text,
+            category=follow_up.category,
+            difficulty=follow_up.difficulty,
+            expected_topics=follow_up.expected_topics,
+            evaluation_rubric=follow_up.evaluation_rubric or ["depth", "reasoning"],
+            is_follow_up=True,
+            parent_question_id=root_id,
+            follow_up_depth=depth,
+            probed_claims=follow_up.probed_claims,
+        )
+        persisted = await self._persist_question(
+            interview.id,
+            question,
+            kind=QuestionKind.FOLLOW_UP,
+        )
+        question = question.model_copy(update={"id": persisted.id})
+        return self._engine.attach_question(context, question)
 
     async def _prepare_current_phase_question(
         self,
@@ -133,12 +189,18 @@ class InterviewExecutionService:
         await self._session.refresh(interview)
         return self._engine.snapshot(context)
 
-    async def _persist_question(self, interview_id: UUID, question: SessionQuestion) -> Question:
+    async def _persist_question(
+        self,
+        interview_id: UUID,
+        question: SessionQuestion,
+        *,
+        kind: QuestionKind | None = None,
+    ) -> Question:
         entity = Question(
             interview_id=interview_id,
             position=question.position,
             text=question.text,
-            kind=_kind_for_category(question.category),
+            kind=kind or _kind_for_category(question.category),
         )
         return await self._questions.add(entity)
 

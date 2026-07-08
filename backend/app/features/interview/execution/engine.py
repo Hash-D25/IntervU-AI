@@ -104,13 +104,16 @@ class InterviewEngine:
             }
         )
         questions = [*context.questions[:-1], answered_question]
-        updated = context.model_copy(
+        return context.model_copy(
             update={
                 "questions": questions,
                 "awaiting_answer": False,
             }
         )
-        return InterviewEngine._advance_after_answer(updated)
+
+    @staticmethod
+    def advance_after_answer(context: SessionContext) -> SessionContext:
+        return InterviewEngine._advance_after_answer(context)
 
     @staticmethod
     def _advance_after_answer(context: SessionContext) -> SessionContext:

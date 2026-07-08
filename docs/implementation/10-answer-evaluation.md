@@ -120,4 +120,5 @@ cd backend
 
 ## What's next
 
-Interview-level feedback report aggregating per-answer evaluations.
+Adaptive follow-up probes after claim extraction (Iteration 13).
+Frontend feedback view remains next for reporting.

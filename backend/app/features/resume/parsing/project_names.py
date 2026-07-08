@@ -138,7 +138,22 @@ def normalize_project_references_in_text(text: str, project_names: list[str]) ->
         result = _normalize_dash_variants(result, name)
         for quote in ("'", '"'):
             result = result.replace(f"{quote}{name}{quote}", name)
+        result = _dedupe_adjacent_project_mentions(result, name)
     return _MULTI_SPACE.sub(" ", result).strip()
+
+
+def _dedupe_adjacent_project_mentions(text: str, canonical: str) -> str:
+    """Collapse duplicated project titles like '... Viewer in Viewer'."""
+    escaped = re.escape(canonical)
+    # Same title repeated with 'in'/'for'/'of' between.
+    pattern = re.compile(
+        rf"\b({escaped})\s+(?:in|for|of|on|at)\s+\1\b",
+        re.IGNORECASE,
+    )
+    result = pattern.sub(r"\1", text)
+    # Back-to-back duplicate titles.
+    adjacent = re.compile(rf"\b({escaped})(?:\s+\1)+\b", re.IGNORECASE)
+    return adjacent.sub(r"\1", result)
 
 
 def _normalize_dash_variants(text: str, canonical: str) -> str:

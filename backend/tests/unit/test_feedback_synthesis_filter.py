@@ -92,3 +92,41 @@ def test_refine_feedback_removes_contradictory_and_verbatim_weaknesses() -> None
     assert len(refined.weaknesses) >= 2
     assert len(refined.recommendations) >= 3
     assert any("depth" in item.casefold() for item in refined.weaknesses)
+
+
+def test_refine_feedback_drops_hallucinated_resume_rewrite_advice() -> None:
+    raw = FeedbackResult(
+        summary="Strong interview but the code optimization discussion was weak.",
+        strengths=["Clear communication"],
+        weaknesses=["Depth varied across phases"],
+        recommendations=[
+            "Review and revise resume to emphasize technical accomplishments",
+            "Practice explaining edge cases in SQL answers",
+            "Do a timed mock interview",
+        ],
+        learning_roadmap=["Week 1: SQL edge cases", "Week 2: project deep dives"],
+        overall_score=8.1,
+        generator_name="llm",
+    )
+    context = _harshita_context()
+    context = context.model_copy(
+        update={
+            "phases_covered": ["introduction", "resume", "projects", "cs_fundamentals"],
+            "weakest_answers": [
+                "cs_fundamentals/root score=7.02: Write a simple SQL query..."
+            ],
+            "dimension_averages": {
+                "technical_accuracy": 8.5,
+                "completeness": 7.0,
+                "communication": 9.0,
+                "depth": 7.2,
+                "examples": 8.1,
+            },
+        }
+    )
+
+    refined = refine_feedback(raw, context)
+
+    assert all("resume" not in item.casefold() for item in refined.recommendations)
+    assert "code optimization discussion" not in refined.summary.casefold()
+    assert len(refined.recommendations) >= 3

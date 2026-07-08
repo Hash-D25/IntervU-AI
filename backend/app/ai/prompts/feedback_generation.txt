@@ -20,11 +20,12 @@ Rules:
 - recommendations: 3-6 practical next steps before the next interview — each must address a real gap.
 - learning_roadmap: 4-8 sequenced items for the next 2-4 weeks (study + practice).
 - summary: 2-4 sentences synthesizing performance for the target_role at company_name.
-- Base insights on dimension_averages, weakest_dimensions, strongest_dimensions, and answer evidence.
+- Base insights on dimension_averages, weakest_dimensions, strongest_dimensions, phases_covered, weakest_answers, and answer evidence.
 - SYNTHESIZE across the interview. Do NOT copy answer_improvements or recurring_improvements verbatim.
 - Follow generation_guidance.synthesis_guardrails — never suggest adding facts already stated in any answer_transcript.
 - If interview_signals shows a fact is already present (e.g. states_cp_problem_count=true), do NOT recommend adding it again.
-- Do not invent projects or facts absent from the context.
+- Do not invent projects, phases, topics, or advice themes absent from the context.
+- Never invent a "code optimization discussion", "resume rewrite", or other topic unless it appears in phases_covered / weakest_answers.
 - Prefer role-relevant guidance for the target_role and company_name.
 
 Context:

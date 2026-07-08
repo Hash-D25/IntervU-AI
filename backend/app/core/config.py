@@ -70,6 +70,10 @@ class Settings(BaseSettings):
     return_word_timestamps: bool = False
     whisper_beam_size: int = 5
     transcript_refiner: str = "llm"
+    follow_up_generator: str = "llm"
+    max_follow_ups_per_answer: int = 1
+    max_follow_ups_per_interview: int = 3
+    follow_up_on_phases: str = "resume,projects,cs_fundamentals,behavioral"
 
     # Vector store
     chroma_host: str = "localhost"

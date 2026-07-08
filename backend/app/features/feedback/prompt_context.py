@@ -22,6 +22,8 @@ def build_feedback_prompt_context(context: FeedbackContext) -> str:
         "dimension_averages": context.dimension_averages,
         "strongest_dimensions": strongest_dimensions(context.dimension_averages),
         "weakest_dimensions": weakest_dimensions(context.dimension_averages),
+        "phases_covered": context.phases_covered,
+        "weakest_answers": context.weakest_answers,
         "recurring_strengths": context.recurring_strengths,
         "recurring_improvements": context.recurring_improvements,
         "interview_signals": interview_signals,
@@ -30,6 +32,8 @@ def build_feedback_prompt_context(context: FeedbackContext) -> str:
                 "position": item.position,
                 "phase": item.phase,
                 "category": item.category,
+                "is_follow_up": item.is_follow_up,
+                "probed_claims": item.probed_claims,
                 "question_text": item.question_text,
                 "answer_transcript": _trim_text(item.answer_transcript, 1200),
                 "overall_score": item.overall_score,
@@ -52,13 +56,19 @@ def build_feedback_prompt_context(context: FeedbackContext) -> str:
                 "weaknesses or recommendations. Frame weaknesses as observations "
                 "(e.g. 'Depth varied across phases') not imperatives ('Offer more...')."
             ),
+            "evidence": (
+                "Only discuss phases listed in phases_covered. Use weakest_answers "
+                "and dimension_averages as primary evidence. Do NOT invent themes "
+                "like resume rewriting, HR process, or phases that never happened."
+            ),
             "recommendations": (
                 "Give practical next steps the candidate can apply before their next "
-                "interview. Each item must address a genuine gap not already covered "
-                "in any answer_transcript."
+                "interview. Each item must address a genuine gap from evidence above, "
+                "not already covered in any answer_transcript."
             ),
             "learning_roadmap": (
-                "Provide a sequenced study/practice plan for the next 2-4 weeks."
+                "Provide a sequenced study/practice plan for the next 2-4 weeks "
+                "tied to weakest_dimensions and weakest_answers."
             ),
             "synthesis_guardrails": guardrails,
         },
@@ -73,23 +83,34 @@ def _interview_synthesis_guardrails(
     guards: list[str] = [
         "Weaknesses and recommendations must be interview-level synthesis, "
         "not a bullet list of per-answer improvements.",
+        "Do not mention resume rewriting, LinkedIn polish, or application paperwork "
+        "unless the interview specifically evaluated those.",
+        f"Only refer to these phases: {', '.join(context.phases_covered) or 'none'}.",
     ]
     if signals.get("states_cp_problem_count"):
         guards.append(
             "Do NOT suggest adding competitive-programming volume or DSA context — "
             "the candidate already quantified problem-solving practice."
         )
-    if signals.get("explains_company_or_role_motivation") and signals.get("mentions_named_projects"):
+    if signals.get("explains_company_or_role_motivation") and signals.get(
+        "mentions_named_projects"
+    ):
         guards.append(
             "Do NOT suggest 'explain why EPAM' or 'align projects with EPAM' generically — "
             "motivation and projects were already stated. Suggest deeper alignment only "
             "(specific EPAM values, tech stack, or role expectations)."
         )
-    weak = weakest_dimensions(context.dimension_averages, limit=1)
+    weak = weakest_dimensions(context.dimension_averages, limit=2)
     if weak:
         guards.append(
-            f"Primary growth area from dimension averages: {weak[0]}. "
-            "Center weaknesses and roadmap on that dimension with evidence."
+            f"Primary growth areas from dimension averages: {', '.join(weak)}. "
+            "Center weaknesses and roadmap on those dimensions with evidence from "
+            "weakest_answers."
+        )
+    if context.weakest_answers:
+        guards.append(
+            "Reference the weakest observed answers when discussing gaps: "
+            + "; ".join(context.weakest_answers[:2])
         )
     return guards
 

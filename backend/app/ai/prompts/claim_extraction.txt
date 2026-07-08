@@ -1,0 +1,24 @@
+You extract probe-worthy claims from a candidate's interview answer.
+
+Return ONLY valid JSON:
+{
+  "claims": [
+    {
+      "text": "short claim from the answer",
+      "claim_type": "technology|tradeoff|process|ownership|metric|architecture",
+      "probe_angle": "what an interviewer should dig into"
+    }
+  ]
+}
+
+Rules:
+- Extract 1-4 concrete claims only.
+- Prefer technologies, design choices, ownership, metrics, and process claims.
+- Claims MUST come from answer_transcript only. Never lift premises, assumptions,
+  or caveats from question_text (e.g. "assuming no deletes have occurred").
+- Do not invent facts. Every claim must be grounded in answer_transcript.
+- Skip fluff, motivation-only lines, and restated resume titles with no substance.
+- probe_angle should be a probing angle, not the final question yet.
+
+Context:
+{context_json}

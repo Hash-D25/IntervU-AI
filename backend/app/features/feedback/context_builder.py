@@ -33,6 +33,8 @@ def build_feedback_context(interview: Interview) -> FeedbackContext:
         dimension_averages=dimension_averages,
         recurring_strengths=recurring_strengths,
         recurring_improvements=recurring_improvements,
+        weakest_answers=_weakest_answer_labels(evaluated_answers),
+        phases_covered=_phases_covered(evaluated_answers),
     )
 
 
@@ -62,7 +64,42 @@ def _question_to_summary(question: SessionQuestion) -> EvaluatedAnswerSummary | 
         dimension_scores=question.evaluation.scores,
         answer_strengths=question.evaluation.strengths,
         answer_improvements=question.evaluation.improvements,
+        is_follow_up=question.is_follow_up,
+        probed_claims=question.probed_claims,
     )
+
+
+def _weakest_answer_labels(
+    answers: list[EvaluatedAnswerSummary],
+    *,
+    limit: int = 3,
+) -> list[str]:
+    ordered = sorted(answers, key=lambda item: item.overall_score)
+    labels: list[str] = []
+    for item in ordered[:limit]:
+        kind = "follow-up" if item.is_follow_up else "root"
+        labels.append(
+            f"{item.phase}/{kind} score={item.overall_score:.2f}: {_trim(item.question_text, 80)}"
+        )
+    return labels
+
+
+def _phases_covered(answers: list[EvaluatedAnswerSummary]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for answer in answers:
+        if answer.phase in seen:
+            continue
+        seen.add(answer.phase)
+        ordered.append(answer.phase)
+    return ordered
+
+
+def _trim(value: str, max_chars: int) -> str:
+    cleaned = value.strip()
+    if len(cleaned) <= max_chars:
+        return cleaned
+    return f"{cleaned[:max_chars]}..."
 
 
 def _dimension_averages(answers: list[EvaluatedAnswerSummary]) -> dict[str, float]:
