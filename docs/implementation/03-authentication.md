@@ -1,9 +1,9 @@
-# 03 — Authentication
+# 03 - Authentication
 
 ## Goal
 
-Add production-grade authentication — registration, login, JWT access tokens,
-rotating refresh tokens, logout, and a reusable "protected route" dependency —
+Add production-grade authentication - registration, login, JWT access tokens,
+rotating refresh tokens, logout, and a reusable "protected route" dependency -
 while keeping auth **isolated** from business logic.
 
 ## Scope
@@ -19,16 +19,16 @@ login, rate limiting (future iterations).
 
 ## Token strategy
 
-- **Access token** — stateless **JWT** (HS256), ~15 min. Claims: `sub` (user id),
+- **Access token** - stateless **JWT** (HS256), ~15 min. Claims: `sub` (user id),
   `type=access`, `iat`, `exp`.
-- **Refresh token** — **stateful, rotating**. An opaque random string
+- **Refresh token** - **stateful, rotating**. An opaque random string
   (`secrets.token_urlsafe`) returned to the client; only its **SHA-256 hash** is
   stored in `refresh_tokens`. On `/refresh` the old token is revoked and a new
   one issued (rotation); `/logout` revokes it.
 
 **Why stateful refresh:** revocable (real logout / "logout everywhere") and
 rotation limits replay if a token leaks. **Tradeoff:** one indexed DB lookup per
-refresh. **Alternative (rejected):** stateless JWT refresh — simpler but not
+refresh. **Alternative (rejected):** stateless JWT refresh - simpler but not
 revocable.
 
 **Why store only a hash:** a database compromise never yields usable refresh
@@ -36,7 +36,7 @@ tokens.
 
 ---
 
-## Password hashing — Argon2id
+## Password hashing - Argon2id
 
 `core/security/passwords.py` wraps `argon2-cffi` (`hash_password`,
 `verify_password`). Argon2id is OWASP's current recommendation and avoids
@@ -68,7 +68,7 @@ features/auth/
 ├── models.py       # RefreshToken (hash only, expires_at, revoked_at)
 ├── schemas.py      # Register/Login/Refresh/Token/User DTOs (EmailStr)
 ├── repository.py   # RefreshTokenRepository (get_by_hash / get_active_by_hash / revoke)
-├── service.py      # AuthService — register/login/refresh/logout
+├── service.py      # AuthService - register/login/refresh/logout
 ├── dependencies.py # DI providers + get_current_user + CurrentUserDep
 └── router.py       # /auth routes
 ```
@@ -158,7 +158,7 @@ Changed: `core/config.py` (JWT settings), `core/exceptions.py`
 
 - `HTTPBearer` returns **401** on missing credentials in this FastAPI version
   (tests assert 401).
-- Refresh tokens are opaque, not JWTs — don't try to decode them; they're looked
+- Refresh tokens are opaque, not JWTs - don't try to decode them; they're looked
   up by hash.
 - The assistant does **not** auto-write secrets into `.env`; generate and add
   `JWT_SECRET_KEY` yourself (the dev default keeps local runs working).

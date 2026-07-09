@@ -10,11 +10,11 @@ Experienced engineer.
 Skills: Python
 
 Experience
-Software Engineer — Acme Corp
+Software Engineer - Acme Corp
 Built APIs.
 
 Education
-B.Tech — Example University, 2022
+B.Tech - Example University, 2022
 
 Certifications
 AWS Certified

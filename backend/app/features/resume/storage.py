@@ -1,4 +1,4 @@
-"""Resume file storage — local disk and Cloudinary backends.
+"""Resume file storage - local disk and Cloudinary backends.
 
 ``FileStorageService`` is the boundary the upload service depends on. Swap
 backends via ``RESUME_STORAGE_BACKEND`` without changing business logic.

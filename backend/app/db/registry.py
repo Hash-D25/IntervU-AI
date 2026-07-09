@@ -1,7 +1,7 @@
 """Single import point that registers every ORM model on ``Base.metadata``.
 
 Import this module (rather than individual model modules) wherever the full
-schema must be known — Alembic autogenerate and test table creation. Importing a
+schema must be known - Alembic autogenerate and test table creation. Importing a
 model class has the side effect of registering its table.
 """
 

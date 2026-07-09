@@ -1,6 +1,6 @@
 """Resume metadata ORM model.
 
-Only the file *path* is stored — never file bytes. Parsing fields arrive in a
+Only the file *path* is stored - never file bytes. Parsing fields arrive in a
 later iteration.
 """
 

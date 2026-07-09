@@ -1,7 +1,7 @@
 [project]
 name = "interviewerai-backend"
 version = "0.1.0"
-description = "InterviewerAI backend — an AI mock-interview platform (FastAPI)."
+description = "InterviewerAI backend - an AI mock-interview platform (FastAPI)."
 requires-python = ">=3.13"
 readme = "README.md"
 
@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# AI stack — installed when working on retrieval / interview-graph iterations.
+# AI stack - installed when working on retrieval / interview-graph iterations.
 ai = [
     "langgraph>=0.2",
     "langchain>=0.3",
@@ -37,7 +37,7 @@ ai = [
     "chromadb>=0.5",
     "openai>=1.50",
 ]
-# Voice stack — Whisper transcription. Heavier; install only when needed.
+# Voice stack - Whisper transcription. Heavier; install only when needed.
 voice = [
     "faster-whisper>=1.0",
 ]
@@ -59,7 +59,7 @@ build-backend = "hatchling.build"
 packages = ["app"]
 
 # ---------------------------------------------------------------------------
-# Ruff — linting + formatting
+# Ruff - linting + formatting
 # ---------------------------------------------------------------------------
 [tool.ruff]
 line-length = 100
@@ -75,7 +75,7 @@ select = ["E", "F", "I", "B", "C4", "UP", "SIM"]
 known-first-party = ["app"]
 
 # ---------------------------------------------------------------------------
-# mypy — strict typing everywhere
+# mypy - strict typing everywhere
 # ---------------------------------------------------------------------------
 [tool.mypy]
 python_version = "3.13"

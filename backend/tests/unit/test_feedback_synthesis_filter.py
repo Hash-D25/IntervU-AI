@@ -16,7 +16,7 @@ def _intro_transcript() -> str:
         "browser automation assistant. I also actively practice competitive programming and "
         "have solved over 800 problems across platforms like LeetCode and Codeforces. I'm "
         "interested in the SDE Intern role at EPAM because of the opportunity to work on "
-        "real-world software solutions. At Tulifo I owned the auth module end-to-end — "
+        "real-world software solutions. At Tulifo I owned the auth module end-to-end - "
         "schema design in Prisma, JWT refresh flow, and API tests."
     )
 

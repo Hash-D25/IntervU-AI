@@ -15,3 +15,4 @@ class JobDescriptionAnalysisResponse(BaseModel):
     responsibilities: list[str]
     seniority_level: SeniorityLevel
     analyzer_name: str
+    extracted_text: str | None = None

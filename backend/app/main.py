@@ -39,15 +39,22 @@ def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(settings.log_level)
 
-    app = FastAPI(title="InterviewerAI", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="IntervU", version="0.1.0", lifespan=lifespan)
     register_exception_handlers(app)
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+
+    cors_kwargs: dict[str, object] = {
+        "allow_credentials": True,
+        "allow_methods": ["*"],
+        "allow_headers": ["*"],
+    }
+    if settings.app_env == "development":
+        # Next.js may bind to 3001/3002 when 3000 is busy - allow any local dev port.
+        cors_kwargs["allow_origin_regex"] = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
+        cors_kwargs["allow_origins"] = settings.cors_origin_list
+    else:
+        cors_kwargs["allow_origins"] = settings.cors_origin_list
+
+    app.add_middleware(CORSMiddleware, **cors_kwargs)
     app.include_router(api_router, prefix=settings.api_v1_prefix)
     return app
 

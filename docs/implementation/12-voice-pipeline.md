@@ -1,4 +1,4 @@
-# 12 — Voice Pipeline
+# 12 - Voice Pipeline
 
 ## Goal
 
@@ -30,7 +30,7 @@ AudioProcessor → VoiceTranscriptionService → Transcriber
         ▼
 TranscribeResponse { transcript }
         │
-        ▼  (separate step — interview logic unchanged)
+        ▼  (separate step - interview logic unchanged)
 POST /interviews/{id}/execution/answer { transcript }
 ```
 
@@ -43,9 +43,9 @@ POST /interviews/{id}/execution/answer { transcript }
 
 ### Streaming-ready design
 
-- `TranscriptionChunk` — partial/final text slices with optional timestamps
-- `Transcriber.transcribe_stream()` — async chunk iterator
-- `POST /voice/transcribe/stream` — SSE events (`started`, `chunk`, `done`, `error`)
+- `TranscriptionChunk` - partial/final text slices with optional timestamps
+- `Transcriber.transcribe_stream()` - async chunk iterator
+- `POST /voice/transcribe/stream` - SSE events (`started`, `chunk`, `done`, `error`)
 
 Whisper currently yields segment-level chunks; true realtime streaming can plug
 into the same contract later.

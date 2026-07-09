@@ -1,11 +1,11 @@
-# 02 — Database Layer
+# 02 - Database Layer
 
 ## Goal
 
 Model the domain and give every entity a clean persistence path: SQLAlchemy 2
 models with UUID keys and timestamps, a generic repository base plus concrete
 repositories, the initial Alembic migration, and repository tests. **Database
-code only** — no services, routes, or AI.
+code only** - no services, routes, or AI.
 
 ## Scope
 
@@ -41,7 +41,7 @@ User ──1:N──> Interview ──1:N──> Question ──1:1──> Answe
 | FeedbackReport | `interview_id` (FK, unique), `summary`, `strengths`/`weaknesses`/`suggestions`/`roadmap` (JSONB lists), `overall_score?` |
 
 **Enums:** `InterviewStatus{created,in_progress,completed,abandoned}`,
-`QuestionKind{technical,behavioral,follow_up}` — Python `StrEnum`, stored as
+`QuestionKind{technical,behavioral,follow_up}` - Python `StrEnum`, stored as
 native Postgres enum types using the enum *values* (via `values_callable`).
 
 ---
@@ -61,7 +61,7 @@ what they need. SQLAlchemy copies mixin columns into each mapped class.
 ### Interview aggregate in one module
 
 `Interview`, `Question`, `Answer` live together in
-`features/interview/models.py` — they're one aggregate and share relationships.
+`features/interview/models.py` - they're one aggregate and share relationships.
 Under 300 lines; split later only if needed.
 
 ### Generic repository (SOLID)
@@ -73,7 +73,7 @@ Under 300 lines; split later only if needed.
   **LSP** subclasses are drop-in · **ISP** base stays minimal, special queries
   in subclasses · **DIP** repos receive an `AsyncSession` (injected).
 - **Transaction boundary:** repos `flush` (assign IDs / surface constraint
-  errors) but **never `commit`** — commit belongs to the service/request layer
+  errors) but **never `commit`** - commit belongs to the service/request layer
   (next iterations).
 - **Why a generic class, not a `Protocol` + impl:** the class *is* the
   abstraction; a separate interface would add indirection with no current value.
@@ -94,7 +94,7 @@ Feedback list columns use `JSON().with_variant(JSONB, "postgresql")` →
 ### Model registry
 
 `db/registry.py` imports `Base` + every model so importing it registers the full
-schema on `Base.metadata`. Used by Alembic `env.py` and tests — one import
+schema on `Base.metadata`. Used by Alembic `env.py` and tests - one import
 instead of many, and no risk of a model being missed by autogenerate.
 
 ---
@@ -175,7 +175,7 @@ Changed: `migrations/env.py` (import registry), `pyproject.toml` (`aiosqlite`).
 ## Notes & gotchas
 
 - `Column(unique=True, index=True)` yields a **single unique index** (e.g.
-  `ix_users_email`), not a separate unique constraint — reflected in the
+  `ix_users_email`), not a separate unique constraint - reflected in the
   migration.
 - Async ORM has no lazy loading; tests use `session.refresh(obj, ["questions"])`
   to load relationships explicitly.

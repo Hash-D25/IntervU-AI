@@ -45,7 +45,7 @@ class SessionQuestion(BaseModel):
 
 
 class SessionContext(BaseModel):
-    """All engine state lives here — nothing is implied elsewhere."""
+    """All engine state lives here - nothing is implied elsewhere."""
 
     status: EngineStatus = EngineStatus.NOT_STARTED
     phase: InterviewPhase | None = None

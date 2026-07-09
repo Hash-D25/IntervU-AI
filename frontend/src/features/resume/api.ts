@@ -1,68 +1,30 @@
-import { env } from "@/env";
-import type { AuthTokens, ParseProgressEvent, ParsedProfile, Resume } from "@/features/resume/types";
-import { ApiError } from "@/lib/api-client";
+import type { ParseProgressEvent, ParsedProfile, Resume } from "@/features/resume/types";
+import { ApiError, apiClient } from "@/lib/api-client";
 
-const TOKEN_KEY = "interviewerai_access_token";
-
-export function getStoredToken(): string | null {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  return sessionStorage.getItem(TOKEN_KEY);
+export async function listResumes(): Promise<Resume[]> {
+  return apiClient.authGet<Resume[]>("/resumes/");
 }
 
-export function storeToken(token: string): void {
-  sessionStorage.setItem(TOKEN_KEY, token);
-}
-
-function authHeaders(token: string): HeadersInit {
-  return { Authorization: `Bearer ${token}` };
-}
-
-export async function login(email: string, password: string): Promise<AuthTokens> {
-  const response = await fetch(`${env.apiBaseUrl}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  if (!response.ok) {
-    throw new ApiError(response.status, "Login failed");
-  }
-  return (await response.json()) as AuthTokens;
-}
-
-export async function listResumes(token: string): Promise<Resume[]> {
-  const response = await fetch(`${env.apiBaseUrl}/resumes/`, {
-    headers: authHeaders(token),
-  });
-  if (!response.ok) {
-    throw new ApiError(response.status, "Failed to list resumes");
-  }
-  return (await response.json()) as Resume[];
-}
-
-export async function uploadResume(token: string, file: File): Promise<Resume> {
+export async function uploadResume(file: File): Promise<Resume> {
   const form = new FormData();
   form.append("file", file);
-  const response = await fetch(`${env.apiBaseUrl}/resumes/upload`, {
+  const response = await apiClient.authFetch("/resumes/upload", {
     method: "POST",
-    headers: authHeaders(token),
     body: form,
   });
   if (!response.ok) {
-    throw new ApiError(response.status, "Upload failed");
+    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
+    throw new ApiError(response.status, body?.detail ?? "Upload failed");
   }
   return (await response.json()) as Resume;
 }
 
 export async function parseResumeWithProgress(
-  token: string,
   resumeId: string,
   onProgress: (event: ParseProgressEvent) => void,
 ): Promise<ParsedProfile> {
-  const response = await fetch(`${env.apiBaseUrl}/resumes/${resumeId}/parse/stream`, {
+  const response = await apiClient.authFetch(`/resumes/${resumeId}/parse/stream`, {
     method: "POST",
-    headers: authHeaders(token),
   });
 
   if (!response.ok) {
@@ -109,16 +71,6 @@ export async function parseResumeWithProgress(
   throw new Error("Parse stream ended without a result");
 }
 
-export async function getParsedProfile(
-  token: string,
-  resumeId: string,
-): Promise<ParsedProfile> {
-  const response = await fetch(`${env.apiBaseUrl}/resumes/${resumeId}/parsed`, {
-    headers: authHeaders(token),
-  });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
-    throw new ApiError(response.status, body?.detail ?? "No parsed profile found");
-  }
-  return (await response.json()) as ParsedProfile;
+export async function getParsedProfile(resumeId: string): Promise<ParsedProfile> {
+  return apiClient.authGet<ParsedProfile>(`/resumes/${resumeId}/parsed`);
 }

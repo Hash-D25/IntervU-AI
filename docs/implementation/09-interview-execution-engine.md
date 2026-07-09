@@ -1,8 +1,8 @@
-# 09 — Interview Execution Engine
+# 09 - Interview Execution Engine
 
 ## Goal
 
-Run a live interview session with an **explicit phase state machine** — no hidden
+Run a live interview session with an **explicit phase state machine** - no hidden
 state. The engine tracks the current question, previous questions, full session
 context, and allowed phase transitions.
 
@@ -129,7 +129,7 @@ pytest tests/unit/test_interview_engine.py tests/integration/test_interview_exec
 ## How to try it
 
 1. Create an interview (Iteration 07).
-2. `POST /interviews/{id}/execution/start` — returns intro question.
+2. `POST /interviews/{id}/execution/start` - returns intro question.
 3. `POST /interviews/{id}/execution/answer` with `{ "transcript": "..." }`.
 4. Repeat until `status` is `completed` and `phase` is `final`.
 

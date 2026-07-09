@@ -1,6 +1,6 @@
 """Provider-agnostic LLM contract.
 
-Business logic depends on this ``Protocol`` — never on a concrete SDK. Swapping
+Business logic depends on this ``Protocol`` - never on a concrete SDK. Swapping
 providers means adding an implementation that satisfies this interface; no
 service code changes. Implementations arrive in the AI iteration.
 """

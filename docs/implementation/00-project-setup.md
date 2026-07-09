@@ -1,9 +1,9 @@
-# 00 — Project Setup
+# 00 - Project Setup
 
 ## Goal
 
 Create a clean, empty-but-organized monorepo with all tooling, dependency
-manifests, and folder structure in place — **no application code**.
+manifests, and folder structure in place - **no application code**.
 
 ## Scope
 
@@ -24,7 +24,7 @@ infra (PostgreSQL + ChromaDB).
 
 - **Why:** single-team project, atomic cross-cutting changes, one place to clone
   and run. Easy to split into separate repos later if needed.
-- **Alternative considered:** two repos. Rejected — adds coordination overhead
+- **Alternative considered:** two repos. Rejected - adds coordination overhead
   with no benefit at this stage.
 
 ### Feature-based, not layer-based, organization
@@ -35,7 +35,7 @@ rather than global `controllers/`, `services/`, `models/` folders.
 - **Why:** everything about one capability lives together (high cohesion); the
   architecture rules (thin routes, logic in services, DB in repositories) are
   enforced by physical structure.
-- **Alternative:** layer-based monolith. Rejected — scatters a single feature
+- **Alternative:** layer-based monolith. Rejected - scatters a single feature
   across many top-level folders and grows into a "big ball of mud".
 
 ### The AI boundary is isolated up front
@@ -88,10 +88,10 @@ responsibility, so the structure is self-documenting.
 
 ## Tooling configuration (in `backend/pyproject.toml`)
 
-- **Ruff** — lint + format; rule set `E, F, I, B, C4, UP, SIM`; line length 100.
-- **mypy** — `strict = true`, pydantic plugin, Python 3.13.
-- **pytest** — `asyncio_mode = "auto"`, `testpaths = ["tests"]`.
-- **coverage** — branch coverage, source `app`.
+- **Ruff** - lint + format; rule set `E, F, I, B, C4, UP, SIM`; line length 100.
+- **mypy** - `strict = true`, pydantic plugin, Python 3.13.
+- **pytest** - `asyncio_mode = "auto"`, `testpaths = ["tests"]`.
+- **coverage** - branch coverage, source `app`.
 
 Frontend: TypeScript `strict` + `noUncheckedIndexedAccess`, path alias `@/* ->
 src/*`; Tailwind content globs cover `app`, `components`, `features`.
@@ -130,5 +130,5 @@ npm install                                                                # fro
 - `.gitignore` initially ignored `frontend/.env.local.example` because the
   pattern `.env.*` swallowed it. Fixed by negating with `!*.example` so all
   template env files stay tracked.
-- npm reported 2 moderate advisories on a fresh Next install — left as-is;
+- npm reported 2 moderate advisories on a fresh Next install - left as-is;
   `npm audit fix --force` can introduce breaking changes.

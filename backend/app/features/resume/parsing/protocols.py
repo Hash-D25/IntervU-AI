@@ -1,4 +1,4 @@
-"""Resume parser contract — implement a new strategy by satisfying this Protocol."""
+"""Resume parser contract - implement a new strategy by satisfying this Protocol."""
 
 from typing import Protocol
 

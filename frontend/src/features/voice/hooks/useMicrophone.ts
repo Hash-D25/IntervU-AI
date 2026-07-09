@@ -69,7 +69,7 @@ export function useMicrophone(): UseMicrophoneResult {
         mediaStreamRef.current = null;
         mediaRecorderRef.current = null;
         chunksRef.current = [];
-        setState("idle");
+        setState("processing");
         resolve(blob.size > 0 ? blob : null);
       };
       recorder.stop();

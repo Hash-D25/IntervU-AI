@@ -39,7 +39,7 @@ class Settings(BaseSettings):
     cloudinary_api_key: str = ""
     cloudinary_api_secret: str = ""
 
-    # LLM provider — primary (ollama | groq | gemini | openai) + optional fallback.
+    # LLM provider - primary (ollama | groq | gemini | openai) + optional fallback.
     llm_provider: str = "ollama"
     llm_api_key: str = "ollama"
     llm_base_url: str = "http://localhost:11434/v1"
@@ -81,6 +81,13 @@ class Settings(BaseSettings):
     # Vector store
     chroma_host: str = "localhost"
     chroma_port: int = 8001
+
+    # CORS - comma-separated origins for production; dev also allows localhost regex.
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+
+    @property
+    def cors_origin_list(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
 
 @lru_cache

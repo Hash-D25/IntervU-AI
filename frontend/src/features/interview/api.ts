@@ -1,54 +1,63 @@
-import { env } from "@/env";
-import type { ExecutionSnapshot, SubmitAnswerResponse } from "@/features/interview/types";
-import { ApiError } from "@/lib/api-client";
+import type {
+  CreateInterviewRequest,
+  ExecutionSnapshot,
+  Interview,
+  InterviewSummary,
+  SubmitAnswerResponse,
+} from "@/features/interview/types";
+import { apiClient } from "@/lib/api-client";
 
-function authHeaders(token: string): HeadersInit {
-  return { Authorization: `Bearer ${token}` };
+type JobDescriptionPdfAnalysisResponse = {
+  skills: string[];
+  technologies: string[];
+  responsibilities: string[];
+  seniority_level: string;
+  analyzer_name: string;
+  extracted_text: string | null;
+};
+
+export async function listInterviews(): Promise<InterviewSummary[]> {
+  return apiClient.authGet<InterviewSummary[]>("/interviews/");
 }
 
-export async function getExecutionSnapshot(
-  token: string,
-  interviewId: string,
-): Promise<ExecutionSnapshot> {
-  const response = await fetch(`${env.apiBaseUrl}/interviews/${interviewId}/execution`, {
-    headers: authHeaders(token),
-  });
-  if (!response.ok) {
-    throw new ApiError(response.status, "Failed to load interview execution state");
-  }
-  return (await response.json()) as ExecutionSnapshot;
+export async function getInterview(interviewId: string): Promise<Interview> {
+  return apiClient.authGet<Interview>(`/interviews/${interviewId}`);
 }
 
-export async function startInterviewExecution(
-  token: string,
-  interviewId: string,
-): Promise<ExecutionSnapshot> {
-  const response = await fetch(`${env.apiBaseUrl}/interviews/${interviewId}/execution/start`, {
-    method: "POST",
-    headers: authHeaders(token),
-  });
-  if (!response.ok) {
-    throw new ApiError(response.status, "Failed to start interview");
-  }
-  return (await response.json()) as ExecutionSnapshot;
+export async function createInterview(payload: CreateInterviewRequest): Promise<Interview> {
+  return apiClient.authPost<Interview>("/interviews/", payload);
+}
+
+export async function getExecutionSnapshot(interviewId: string): Promise<ExecutionSnapshot> {
+  return apiClient.authGet<ExecutionSnapshot>(`/interviews/${interviewId}/execution`);
+}
+
+export async function startInterviewExecution(interviewId: string): Promise<ExecutionSnapshot> {
+  return apiClient.authPost<ExecutionSnapshot>(`/interviews/${interviewId}/execution/start`);
 }
 
 export async function submitInterviewAnswer(
-  token: string,
   interviewId: string,
   transcript: string,
 ): Promise<SubmitAnswerResponse> {
-  const response = await fetch(`${env.apiBaseUrl}/interviews/${interviewId}/execution/answer`, {
-    method: "POST",
-    headers: {
-      ...authHeaders(token),
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ transcript }),
+  return apiClient.authPost<SubmitAnswerResponse>(`/interviews/${interviewId}/execution/answer`, {
+    transcript,
   });
+}
+
+export async function parseJobDescriptionPdf(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiClient.authFetch("/job-descriptions/analyze/pdf", {
+    method: "POST",
+    body: formData,
+  });
+
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
-    throw new ApiError(response.status, body?.detail ?? "Failed to submit answer");
+    throw new Error("Could not parse the job description PDF.");
   }
-  return (await response.json()) as SubmitAnswerResponse;
+
+  const body = (await response.json()) as JobDescriptionPdfAnalysisResponse;
+  return body.extracted_text?.trim() ?? "";
 }

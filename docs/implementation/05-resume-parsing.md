@@ -1,10 +1,10 @@
-# 05 — Resume Parsing
+# 05 - Resume Parsing
 
 ## Goal
 
 Parse an uploaded PDF resume into structured data (skills, projects, experience,
 technologies, education), validate the output, and store it **separately** from
-the raw file. Parsers and LLM backends are **pluggable** — swap via env vars.
+the raw file. Parsers and LLM backends are **pluggable** - swap via env vars.
 
 ## Scope
 
@@ -78,7 +78,7 @@ create_llm_provider(settings)
 
 ## Config
 
-### Development (₹0 — Ollama + Qwen)
+### Development (₹0 - Ollama + Qwen)
 
 ```env
 RESUME_PARSER=hybrid
@@ -92,7 +92,7 @@ Pull the model first: `ollama pull qwen3:8b`
 
 ### Other providers
 
-Change only `LLM_PROVIDER` and related vars — no code changes:
+Change only `LLM_PROVIDER` and related vars - no code changes:
 
 | Provider | `LLM_PROVIDER` | Notes |
 | -------- | -------------- | ----- |
@@ -122,7 +122,7 @@ ruff check . && mypy app
 pytest -q
 ```
 
-Integration tests use a **fake parser** — no live LLM calls in CI.
+Integration tests use a **fake parser** - no live LLM calls in CI.
 
 ---
 
@@ -139,4 +139,4 @@ Integration tests use a **fake parser** — no live LLM calls in CI.
 
 ## What's next
 
-Iteration 06 — job description processing, then personalized interview sessions.
+Iteration 06 - job description processing, then personalized interview sessions.

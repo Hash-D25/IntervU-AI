@@ -9,11 +9,11 @@ Software Engineer
 Skills: Python, FastAPI, PostgreSQL, Docker
 
 Experience
-Software Engineer — Acme Corp (2022–Present)
+Software Engineer - Acme Corp (2022–Present)
 Built APIs with FastAPI and PostgreSQL.
 
 Education
-B.Tech Computer Science — Example University, 2022
+B.Tech Computer Science - Example University, 2022
 """
 
 

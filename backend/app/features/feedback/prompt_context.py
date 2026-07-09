@@ -89,14 +89,14 @@ def _interview_synthesis_guardrails(
     ]
     if signals.get("states_cp_problem_count"):
         guards.append(
-            "Do NOT suggest adding competitive-programming volume or DSA context — "
+            "Do NOT suggest adding competitive-programming volume or DSA context - "
             "the candidate already quantified problem-solving practice."
         )
     if signals.get("explains_company_or_role_motivation") and signals.get(
         "mentions_named_projects"
     ):
         guards.append(
-            "Do NOT suggest 'explain why EPAM' or 'align projects with EPAM' generically — "
+            "Do NOT suggest 'explain why EPAM' or 'align projects with EPAM' generically - "
             "motivation and projects were already stated. Suggest deeper alignment only "
             "(specific EPAM values, tech stack, or role expectations)."
         )

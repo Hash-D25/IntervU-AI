@@ -1,4 +1,4 @@
-# InterviewerAI — Backend
+# InterviewerAI - Backend
 
 FastAPI service built with **Clean Architecture** and **feature-based** modules.
 
@@ -13,7 +13,7 @@ router  →  service  →  repository  →  db
 
 Rules enforced by this structure:
 
-- API routes only validate input and call services — never touch the DB.
+- API routes only validate input and call services - never touch the DB.
 - All business logic lives in services.
 - Repositories isolate persistence; ORM models never leak past them.
 - AI prompts live in `app/ai/prompts`, never inline in business logic.
@@ -49,7 +49,7 @@ Each `features/*` module owns: `router`, `service`, `repository`, `models`,
 ## Setup
 
 ```bash
-# From backend/ — create a virtual env (Python 3.13)
+# From backend/ - create a virtual env (Python 3.13)
 python -m venv .venv
 .venv\Scripts\activate        # Windows
 # source .venv/bin/activate   # macOS/Linux

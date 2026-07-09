@@ -1,6 +1,6 @@
 # src/features
 
-Feature modules — vertical UI slices mirroring backend capabilities.
+Feature modules - vertical UI slices mirroring backend capabilities.
 
 Each feature owns its components, hooks, and local state:
 

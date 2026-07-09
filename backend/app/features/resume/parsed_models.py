@@ -1,4 +1,4 @@
-"""Parsed resume profile ORM model — stored separately from raw file metadata."""
+"""Parsed resume profile ORM model - stored separately from raw file metadata."""
 
 import enum
 from uuid import UUID

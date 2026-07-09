@@ -50,7 +50,7 @@ def default_questions_per_phase() -> dict[InterviewPhase, int]:
 
 
 def questions_asked_in_phase(context: SessionContext, phase: InterviewPhase) -> int:
-    """Count root questions only — follow-ups do not consume the phase quota."""
+    """Count root questions only - follow-ups do not consume the phase quota."""
     return sum(
         1
         for question in context.questions

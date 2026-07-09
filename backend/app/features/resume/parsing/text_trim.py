@@ -1,4 +1,4 @@
-"""Trim resume text before sending to an LLM — fewer tokens, faster inference."""
+"""Trim resume text before sending to an LLM - fewer tokens, faster inference."""
 
 import re
 

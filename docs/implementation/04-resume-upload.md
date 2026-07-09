@@ -1,4 +1,4 @@
-# 04 — Resume Upload
+# 04 - Resume Upload
 
 ## Goal
 
@@ -19,7 +19,7 @@ migration `0003_resumes`.
 ## Architecture
 
 ```
-POST /resumes/upload  (router — Upload Controller)
+POST /resumes/upload  (router - Upload Controller)
         │
         ▼
    ResumeService       (validate → store file → persist metadata → commit)
@@ -41,7 +41,7 @@ the filesystem directly.
 
 ---
 
-## Database — `resumes`
+## Database - `resumes`
 
 | Column | Notes |
 | ------ | ----- |
@@ -59,7 +59,7 @@ File bytes are **never** stored in Postgres.
 
 - **Magic bytes** must start with `%PDF-` (don't trust extension alone).
 - **MIME** must be `application/pdf` when the client sends a content type.
-- **Max size** — `RESUME_MAX_SIZE_MB` (default 5); read in 64 KB chunks and
+- **Max size** - `RESUME_MAX_SIZE_MB` (default 5); read in 64 KB chunks and
   fail fast with **413**.
 - **Empty file** → **400**.
 
@@ -111,7 +111,7 @@ CLOUDINARY_API_SECRET=
 
 ## Migration
 
-`0003_resumes` — applied live → `0003_resumes (head)`.
+`0003_resumes` - applied live → `0003_resumes (head)`.
 
 ---
 
@@ -138,5 +138,5 @@ pytest -q   # 25 passed (including resume tests)
 
 ## What's next
 
-Iteration 05 — **resume parsing** (extract skills, projects, technologies,
+Iteration 05 - **resume parsing** (extract skills, projects, technologies,
 experience) using the stored file path, keeping prompts in `app/ai/prompts`.

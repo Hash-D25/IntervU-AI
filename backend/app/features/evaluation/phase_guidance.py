@@ -69,7 +69,7 @@ _PHASE_INSTRUCTIONS: dict[str, str] = {
     "introduction": (
         "INTRODUCTION phase: evaluate as a first-impression self-introduction. "
         "Prioritize communication, completeness, motivation, and relevant examples. "
-        "Do NOT penalize lightly for lacking deep technical architecture — that is "
+        "Do NOT penalize lightly for lacking deep technical architecture - that is "
         "not expected here. technical_accuracy should reflect whether stated facts "
         "sound plausible, not deep system design."
     ),
@@ -125,28 +125,28 @@ def improvement_guardrails(signals: dict[str, bool]) -> list[str]:
     if signals.get("states_cp_problem_count"):
         guards.append(
             "The answer already quantifies competitive-programming/problem-solving "
-            "volume — do NOT suggest adding LeetCode/Codeforces counts."
+            "volume - do NOT suggest adding LeetCode/Codeforces counts."
         )
     if signals.get("states_cgpa_or_gpa"):
-        guards.append("The answer already states CGPA/GPA — do NOT suggest adding it.")
+        guards.append("The answer already states CGPA/GPA - do NOT suggest adding it.")
     if signals.get("mentions_hackathon_achievement"):
         guards.append(
-            "The answer already mentions a hackathon achievement — do NOT suggest "
+            "The answer already mentions a hackathon achievement - do NOT suggest "
             "adding hackathon wins."
         )
     if signals.get("explains_company_or_role_motivation"):
         guards.append(
-            "The answer already explains motivation for the company/role — suggest "
+            "The answer already explains motivation for the company/role - suggest "
             "only deeper alignment (values, JD specifics), not 'explain why EPAM'."
         )
     if signals.get("mentions_named_projects"):
         guards.append(
-            "The answer already names specific projects — do NOT suggest 'mention "
+            "The answer already names specific projects - do NOT suggest 'mention "
             "your projects'."
         )
     if signals.get("mentions_specific_technologies"):
         guards.append(
-            "The answer already lists specific technologies — suggest deeper usage "
+            "The answer already lists specific technologies - suggest deeper usage "
             "or impact, not 'mention tech stack'."
         )
     guards.append(

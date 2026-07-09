@@ -1,6 +1,6 @@
 # app/features
 
-Feature-based modules — the heart of the application. Each folder is one business
+Feature-based modules - the heart of the application. Each folder is one business
 capability and owns its full vertical slice:
 
 ```
@@ -15,10 +15,10 @@ capability and owns its full vertical slice:
 
 Current capabilities:
 
-- `resume/` — resume upload, parsing, and skill/project/experience extraction.
-- `interview/` — interview session lifecycle + dynamic question flow.
-- `evaluation/` — scoring answers across defined dimensions.
-- `feedback/` — strengths, weaknesses, suggestions, and learning roadmap.
+- `resume/` - resume upload, parsing, and skill/project/experience extraction.
+- `interview/` - interview session lifecycle + dynamic question flow.
+- `evaluation/` - scoring answers across defined dimensions.
+- `feedback/` - strengths, weaknesses, suggestions, and learning roadmap.
 
 Dependencies point inward: features may use `core`, `db`, `shared`, and the
-`ai` boundary — never each other's internals.
+`ai` boundary - never each other's internals.

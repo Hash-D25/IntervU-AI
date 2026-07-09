@@ -31,7 +31,13 @@ class JobDescriptionProcessingService:
         return await self._analyze_text(normalize_job_description_text(text))
 
     async def analyze_pdf(self, pdf_bytes: bytes) -> ParsedJobDescription:
-        return await self._analyze_text(extract_job_description_text_from_pdf(pdf_bytes))
+        parsed, _ = await self.analyze_pdf_with_text(pdf_bytes)
+        return parsed
+
+    async def analyze_pdf_with_text(self, pdf_bytes: bytes) -> tuple[ParsedJobDescription, str]:
+        extracted_text = extract_job_description_text_from_pdf(pdf_bytes)
+        parsed = await self._analyze_text(extracted_text)
+        return parsed, extracted_text
 
     async def _analyze_text(self, text: str) -> ParsedJobDescription:
         try:

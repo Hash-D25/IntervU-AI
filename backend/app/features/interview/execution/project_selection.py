@@ -111,7 +111,7 @@ def _resume_phase_instruction(
             "RESUME phase: Ask one breadth question comparing "
             f"'{comparison_projects[0]}' and '{comparison_projects[1]}'. "
             "Focus on differences in purpose, architecture, or tech choices. "
-            "Do NOT deep-dive implementation details — save those for the projects phase."
+            "Do NOT deep-dive implementation details - save those for the projects phase."
         )
     if comparison_projects:
         project = comparison_projects[0]

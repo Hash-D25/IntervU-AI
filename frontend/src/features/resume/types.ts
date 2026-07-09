@@ -37,7 +37,3 @@ export type ParseProgressEvent = {
   message: string;
   result?: ParsedProfile;
 };
-
-export type AuthTokens = {
-  access_token: string;
-};

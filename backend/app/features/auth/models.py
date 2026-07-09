@@ -1,7 +1,7 @@
 """RefreshToken ORM model.
 
 Refresh tokens are stateful so they can be rotated and revoked. Only the SHA-256
-hash of the token is stored — never the raw value.
+hash of the token is stored - never the raw value.
 """
 
 from datetime import datetime

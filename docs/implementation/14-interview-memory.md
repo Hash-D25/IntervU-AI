@@ -1,9 +1,9 @@
-# 14 — Interview Memory
+# 14 - Interview Memory
 
 ## Goal
 
 Rebuild a compact interview memory after each answer so later questions and
-follow-ups can reference earlier statements — e.g. **"You mentioned JWT earlier..."**.
+follow-ups can reference earlier statements - e.g. **"You mentioned JWT earlier..."**.
 
 ## Scope
 
@@ -52,7 +52,7 @@ Config: `INTERVIEW_MEMORY=session|none`.
 | `INTERVIEW_MEMORY_EXCERPT_CHARS` | `280` |
 
 `build_execution_hints` remains for diversity (covered projects / topics).
-Memory is semantic recall for natural callbacks — they are complementary.
+Memory is semantic recall for natural callbacks - they are complementary.
 
 ---
 

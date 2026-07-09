@@ -1,4 +1,4 @@
-"""Interview memory models — rolling summary rebuilt from session answers."""
+"""Interview memory models - rolling summary rebuilt from session answers."""
 
 from uuid import UUID
 

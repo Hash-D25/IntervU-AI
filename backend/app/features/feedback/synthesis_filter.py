@@ -157,7 +157,7 @@ def _synthesized_weaknesses(context: FeedbackContext) -> list[str]:
 
     if "depth" in weak_dims:
         fallbacks.append(
-            "Technical depth varied across phases — weaker answers would improve "
+            "Technical depth varied across phases - weaker answers would improve "
             "with one concrete decision, tradeoff, or metric each."
         )
     if "completeness" in weak_dims:
@@ -205,7 +205,7 @@ def _synthesized_recommendations(context: FeedbackContext) -> list[str]:
             "Use a checklist per answer: approach, edge cases, tradeoffs, and result."
         ),
         "communication": (
-            "Record mock answers and tighten pacing — aim for clear signposting "
+            "Record mock answers and tighten pacing - aim for clear signposting "
             "in the first 20 seconds."
         ),
     }

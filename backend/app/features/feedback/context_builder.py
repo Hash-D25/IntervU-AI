@@ -38,6 +38,11 @@ def build_feedback_context(interview: Interview) -> FeedbackContext:
     )
 
 
+def evaluated_answers_from_interview(interview: Interview) -> list[EvaluatedAnswerSummary]:
+    """Public helper for dashboard and feedback aggregation."""
+    return _evaluated_answers_from_execution(interview)
+
+
 def _evaluated_answers_from_execution(interview: Interview) -> list[EvaluatedAnswerSummary]:
     raw = interview.execution_context or {}
     if not raw:

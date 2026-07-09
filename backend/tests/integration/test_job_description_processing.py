@@ -128,6 +128,7 @@ async def test_analyze_job_description_pdf(
     body = response.json()
     assert body["analyzer_name"] == "fake"
     assert "Python" in body["skills"]
+    assert "Senior Backend Engineer" in body["extracted_text"]
 
 
 async def test_analyze_job_description_pdf_rejects_non_pdf(client: AsyncClient) -> None:

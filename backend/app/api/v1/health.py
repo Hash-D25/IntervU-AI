@@ -1,4 +1,4 @@
-"""Liveness endpoint. Infrastructure only — proves the app is serving requests."""
+"""Liveness endpoint. Infrastructure only - proves the app is serving requests."""
 
 from fastapi import APIRouter
 from pydantic import BaseModel

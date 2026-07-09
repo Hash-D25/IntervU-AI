@@ -1,9 +1,9 @@
-# 13 — Follow-up Questions
+# 13 - Follow-up Questions
 
 ## Goal
 
 Generate adaptive probing follow-ups from candidate answers by extracting claims
-and asking focused questions — e.g. **"We used Redis." → "Why Redis instead of Memcached?"**
+and asking focused questions - e.g. **"We used Redis." → "Why Redis instead of Memcached?"**
 
 ## Scope
 

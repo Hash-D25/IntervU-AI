@@ -1,7 +1,7 @@
 """Auth dependency wiring.
 
 ``get_current_user`` is the single dependency business routes use to require
-authentication — validation lives here as a composable dependency rather than
+authentication - validation lives here as a composable dependency rather than
 ASGI middleware, so it is per-route, typed, and visible in the OpenAPI schema.
 """
 

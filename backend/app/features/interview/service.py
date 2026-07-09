@@ -86,6 +86,9 @@ class InterviewService:
             raise NotFoundError("Interview not found")
         return interview
 
+    async def list_for_user(self, user_id: UUID) -> list[Interview]:
+        return list(await self._interviews.list_for_user_with_feedback(user_id))
+
 
 def _normalize_job_description(job_description: str | None) -> str | None:
     if job_description is None:

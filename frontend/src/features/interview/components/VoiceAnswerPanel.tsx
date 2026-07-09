@@ -2,11 +2,11 @@
 
 import { FormEvent, useState } from "react";
 
+import { GlassCard } from "@/components/GlassCard";
 import { submitInterviewAnswer } from "@/features/interview/api";
 import { MicrophoneRecorder } from "@/features/voice/components/MicrophoneRecorder";
 
 interface VoiceAnswerPanelProps {
-  token: string;
   interviewId: string;
   questionText: string;
   disabled?: boolean;
@@ -14,7 +14,6 @@ interface VoiceAnswerPanelProps {
 }
 
 export function VoiceAnswerPanel({
-  token,
   interviewId,
   questionText,
   disabled = false,
@@ -33,7 +32,7 @@ export function VoiceAnswerPanel({
     setIsSubmitting(true);
     setError(null);
     try {
-      await submitInterviewAnswer(token, interviewId, transcript.trim());
+      await submitInterviewAnswer(interviewId, transcript.trim());
       setTranscript("");
       onSubmitted();
     } catch (err) {
@@ -45,45 +44,43 @@ export function VoiceAnswerPanel({
   }
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4 rounded-lg border p-4">
-      <div>
-        <h2 className="text-lg font-semibold">Current question</h2>
-        <p className="mt-2 text-sm text-gray-700">{questionText}</p>
-      </div>
+    <GlassCard title="Current question" accent="cyan">
+      <form onSubmit={(event) => void handleSubmit(event)} className="space-y-4">
+        <p className="text-sm leading-relaxed text-slate-300">{questionText}</p>
 
-      <MicrophoneRecorder
-        token={token}
-        interviewId={interviewId}
-        disabled={disabled || isSubmitting}
-        onTranscript={(value) => {
-          setTranscript(value);
-          setError(null);
-        }}
-        onError={setError}
-      />
+        <MicrophoneRecorder
+          interviewId={interviewId}
+          disabled={disabled || isSubmitting}
+          onTranscript={(value) => {
+            setTranscript(value);
+            setError(null);
+          }}
+          onError={setError}
+        />
 
-      <label className="block text-sm font-medium text-gray-700" htmlFor="answer-transcript">
-        Transcript (edit before submitting)
-      </label>
-      <textarea
-        id="answer-transcript"
-        value={transcript}
-        onChange={(event) => setTranscript(event.target.value)}
-        rows={6}
-        disabled={disabled || isSubmitting}
-        className="w-full rounded-md border px-3 py-2 text-sm"
-        placeholder="Your spoken answer will appear here after transcription."
-      />
+        <label className="block text-sm font-medium text-slate-400" htmlFor="answer-transcript">
+          Transcript (edit before submitting)
+        </label>
+        <textarea
+          id="answer-transcript"
+          value={transcript}
+          onChange={(event) => setTranscript(event.target.value)}
+          rows={6}
+          disabled={disabled || isSubmitting}
+          className="textarea-glass"
+          placeholder="Your spoken answer will appear here after transcription."
+        />
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+        {error ? <p className="text-sm text-rose-400/90">{error}</p> : null}
 
-      <button
-        type="submit"
-        disabled={disabled || isSubmitting}
-        className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
-      >
-        {isSubmitting ? "Submitting..." : "Submit answer"}
-      </button>
-    </form>
+        <button
+          type="submit"
+          disabled={disabled || isSubmitting}
+          className="btn-success disabled:opacity-50"
+        >
+          {isSubmitting ? "Submitting…" : "Submit answer"}
+        </button>
+      </form>
+    </GlassCard>
   );
 }

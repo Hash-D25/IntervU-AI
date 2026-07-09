@@ -10,13 +10,15 @@ export function ParseProgressBar({ percent, message, isActive }: ParseProgressBa
   return (
     <div className="w-full space-y-2" aria-live="polite" aria-busy={isActive}>
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-slate-700">{isActive ? message : "Ready"}</span>
+        <span className="font-medium text-slate-300">{isActive ? message : "Ready"}</span>
         <span className="tabular-nums text-slate-500">{clamped}%</span>
       </div>
-      <div className="h-3 w-full overflow-hidden rounded-full bg-slate-200">
+      <div className="h-2.5 w-full overflow-hidden rounded-full border border-white/5 bg-white/5">
         <div
           className={`h-full rounded-full transition-all duration-500 ease-out ${
-            isActive ? "bg-indigo-500" : "bg-emerald-500"
+            isActive
+              ? "bg-gradient-to-r from-cyan-400/90 to-violet-400/90"
+              : "bg-gradient-to-r from-emerald-400/90 to-cyan-400/90"
           }`}
           style={{ width: `${clamped}%` }}
           role="progressbar"

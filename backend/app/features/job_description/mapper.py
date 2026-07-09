@@ -5,7 +5,7 @@ from app.features.job_description.schemas import JobDescriptionAnalysisResponse
 
 
 def to_analysis_response(
-    parsed: ParsedJobDescription, *, analyzer_name: str
+    parsed: ParsedJobDescription, *, analyzer_name: str, extracted_text: str | None = None
 ) -> JobDescriptionAnalysisResponse:
     return JobDescriptionAnalysisResponse(
         skills=parsed.skills,
@@ -13,4 +13,5 @@ def to_analysis_response(
         responsibilities=parsed.responsibilities,
         seniority_level=parsed.seniority_level,
         analyzer_name=analyzer_name,
+        extracted_text=extracted_text,
     )

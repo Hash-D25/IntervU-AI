@@ -2,7 +2,7 @@
 
 Concrete repositories subclass ``BaseRepository[Model]`` and set ``model``.
 Repositories isolate persistence; they ``flush`` (to assign IDs and surface
-constraint errors) but never ``commit`` — the transaction boundary belongs to
+constraint errors) but never ``commit`` - the transaction boundary belongs to
 the service/request layer.
 """
 

@@ -1,10 +1,10 @@
-# 08 — Question Generator
+# 08 - Question Generator
 
 ## Goal
 
 Generate structured interview questions from the interview plan, parsed resume,
 and optional job description data. Use a **strategy per category** (DSA,
-project, behavioral, CS fundamentals). **Generation code only** — not yet wired
+project, behavioral, CS fundamentals). **Generation code only** - not yet wired
 to API routes or DB persistence.
 
 ## Scope
@@ -122,7 +122,7 @@ result = await service.generate(context)
 # result.questions → list[GeneratedQuestion]
 ```
 
-No HTTP endpoint yet — Iteration 09 will expose this and persist questions.
+No HTTP endpoint yet - Iteration 09 will expose this and persist questions.
 
 ---
 
@@ -133,7 +133,7 @@ ruff check . && mypy app
 pytest tests/unit/test_question_selector.py tests/unit/test_question_generation_service.py -q
 ```
 
-Tests use a **fake LLM** — no live API calls in CI.
+Tests use a **fake LLM** - no live API calls in CI.
 
 ---
 
@@ -146,5 +146,5 @@ Tests use a **fake LLM** — no live API calls in CI.
 
 ## What's next
 
-Iteration 09 — wire question generation to interview sessions: API endpoint,
+Iteration 09 - wire question generation to interview sessions: API endpoint,
 persist `Question` rows, transition `session_state` from `ready` → `asking_intro`.

@@ -27,7 +27,7 @@ def memory_prompt_payload(memory: InterviewMemory | None) -> dict[str, object] |
         "usage_guidance": {
             "callback_style": (
                 "When useful, reference prior statements with phrasing like "
-                "'You mentioned JWT earlier...' — only using notable_mentions / "
+                "'You mentioned JWT earlier...' - only using notable_mentions / "
                 "key_claims grounded in recent_answers."
             ),
             "avoid": (

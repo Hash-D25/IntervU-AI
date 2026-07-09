@@ -1,1 +1,1 @@
-"""Interview execution engine — explicit phase state machine."""
+"""Interview execution engine - explicit phase state machine."""

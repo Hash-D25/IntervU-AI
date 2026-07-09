@@ -1,5 +1,7 @@
 """Map interview domain models to API DTOs."""
 
+from app.features.dashboard.schemas import InterviewHistoryItem
+from app.features.feedback.context_builder import evaluated_answers_from_interview
 from app.features.interview.models import Interview
 from app.features.interview.planning.schemas import (
     InterviewMetadata,
@@ -7,7 +9,7 @@ from app.features.interview.planning.schemas import (
     SessionState,
 )
 from app.features.interview.planning.state_machine import build_state_snapshot
-from app.features.interview.schemas import InterviewResponse
+from app.features.interview.schemas import InterviewResponse, InterviewSummaryResponse
 
 
 def to_interview_response(interview: Interview) -> InterviewResponse:
@@ -29,3 +31,30 @@ def to_interview_response(interview: Interview) -> InterviewResponse:
         created_at=interview.created_at,
         updated_at=interview.updated_at,
     )
+
+
+def to_interview_summary_response(interview: Interview) -> InterviewSummaryResponse:
+    answers = evaluated_answers_from_interview(interview)
+    report = interview.feedback_report
+    overall: float | None = None
+    if report is not None:
+        overall = round(report.overall_score, 2)
+    elif answers:
+        overall = round(sum(item.overall_score for item in answers) / len(answers), 2)
+    return InterviewSummaryResponse(
+        id=interview.id,
+        company_name=interview.company,
+        target_role=interview.role,
+        interview_type=interview.interview_type,
+        status=interview.status,
+        created_at=interview.created_at,
+        updated_at=interview.updated_at,
+        answered_count=len(answers),
+        overall_score=overall,
+        has_feedback=report is not None,
+    )
+
+
+def to_interview_history_item(interview: Interview) -> InterviewHistoryItem:
+    summary = to_interview_summary_response(interview)
+    return InterviewHistoryItem.model_validate(summary.model_dump())

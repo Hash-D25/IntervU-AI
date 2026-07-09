@@ -1,4 +1,4 @@
-"""Job description analyzer contract — implement a new strategy by satisfying this Protocol."""
+"""Job description analyzer contract - implement a new strategy by satisfying this Protocol."""
 
 from typing import Protocol
 

@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from uuid import UUID
 
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.db.repository import BaseRepository
 from app.features.interview.models import Answer, Interview, Question
@@ -17,6 +18,19 @@ class InterviewRepository(BaseRepository[Interview]):
     ) -> Sequence[Interview]:
         result = await self.session.execute(
             select(Interview)
+            .where(Interview.user_id == user_id)
+            .order_by(Interview.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        return result.scalars().all()
+
+    async def list_for_user_with_feedback(
+        self, user_id: UUID, *, limit: int = 100, offset: int = 0
+    ) -> Sequence[Interview]:
+        result = await self.session.execute(
+            select(Interview)
+            .options(selectinload(Interview.feedback_report))
             .where(Interview.user_id == user_id)
             .order_by(Interview.created_at.desc())
             .limit(limit)

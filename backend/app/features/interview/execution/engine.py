@@ -21,7 +21,7 @@ from app.features.interview.planning.schemas import InterviewType
 
 
 class InterviewEngine:
-    """State transitions only — no I/O, no hidden mutable state."""
+    """State transitions only - no I/O, no hidden mutable state."""
 
     @staticmethod
     def build_context(

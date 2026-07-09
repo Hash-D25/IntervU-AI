@@ -1,9 +1,9 @@
-# 06 — Job Description Processing
+# 06 - Job Description Processing
 
 ## Goal
 
-Turn pasted job description text or a PDF into structured data — skills,
-technologies, responsibilities, and seniority level — using a pluggable
+Turn pasted job description text or a PDF into structured data - skills,
+technologies, responsibilities, and seniority level - using a pluggable
 analyzer. Output is returned as JSON (no persistence in this iteration).
 
 ## Scope
@@ -106,7 +106,7 @@ ruff check . && mypy app
 pytest tests/unit/test_job_description_*.py tests/integration/test_job_description_processing.py -q
 ```
 
-Integration tests use a **fake analyzer** — no live LLM calls in CI.
+Integration tests use a **fake analyzer** - no live LLM calls in CI.
 
 ---
 
@@ -126,5 +126,5 @@ Integration tests use a **fake analyzer** — no live LLM calls in CI.
 
 ## What's next
 
-Iteration 07 — interview session creation using a **parsed resume** and optional
+Iteration 07 - interview session creation using a **parsed resume** and optional
 job description context.

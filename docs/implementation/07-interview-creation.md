@@ -1,4 +1,4 @@
-# 07 — Interview Creation
+# 07 - Interview Creation
 
 ## Goal
 
@@ -151,4 +151,4 @@ pytest tests/unit/test_interview_planner.py tests/integration/test_interview_cre
 
 ## What's next
 
-Iteration 08 — question generation from interview plan + resume + JD context.
+Iteration 08 - question generation from interview plan + resume + JD context.

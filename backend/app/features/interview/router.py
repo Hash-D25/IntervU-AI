@@ -8,12 +8,13 @@ from app.features.auth.dependencies import CurrentUserDep
 from app.features.evaluation.dependencies import AnswerEvaluationServiceDep
 from app.features.interview.dependencies import InterviewExecutionServiceDep, InterviewServiceDep
 from app.features.interview.execution_mapper import to_execution_snapshot_response
-from app.features.interview.mapper import to_interview_response
+from app.features.interview.mapper import to_interview_response, to_interview_summary_response
 from app.features.interview.schemas import (
     AnswerEvaluationResponse,
     CreateInterviewRequest,
     ExecutionSnapshotResponse,
     InterviewResponse,
+    InterviewSummaryResponse,
     SubmitAnswerRequest,
 )
 
@@ -35,6 +36,15 @@ async def create_interview(
         job_description=body.job_description,
     )
     return to_interview_response(interview)
+
+
+@router.get("/", response_model=list[InterviewSummaryResponse])
+async def list_interviews(
+    current_user: CurrentUserDep,
+    service: InterviewServiceDep,
+) -> list[InterviewSummaryResponse]:
+    interviews = await service.list_for_user(current_user.id)
+    return [to_interview_summary_response(interview) for interview in interviews]
 
 
 @router.get("/{interview_id}", response_model=InterviewResponse)

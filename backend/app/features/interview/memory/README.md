@@ -9,7 +9,7 @@ Stores (compactly):
 - notable mentions (for callbacks like "You mentioned JWT earlier...")
 
 Abstraction:
-- `InterviewMemoryBuilder` — rebuild from `SessionContext` (v1: session)
-- `InterviewMemoryStore` — reserved for future DB / vector persistence
+- `InterviewMemoryBuilder` - rebuild from `SessionContext` (v1: session)
+- `InterviewMemoryStore` - reserved for future DB / vector persistence
 
 Config: `INTERVIEW_MEMORY=session|none`

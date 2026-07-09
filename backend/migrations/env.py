@@ -1,7 +1,7 @@
 """Alembic environment (synchronous).
 
 Migrations run with a *synchronous* engine. This is simpler and fully
-cross-platform — it avoids the async event-loop constraints some drivers hit on
+cross-platform - it avoids the async event-loop constraints some drivers hit on
 Windows (psycopg's async mode cannot use the default ProactorEventLoop). The
 application itself remains async; only migrations run sync.
 

@@ -1,13 +1,7 @@
-import { env } from "@/env";
 import type { TranscribeResponse, TranscriptionStreamEvent } from "@/features/voice/types";
-import { ApiError } from "@/lib/api-client";
-
-function authHeaders(token: string): HeadersInit {
-  return { Authorization: `Bearer ${token}` };
-}
+import { ApiError, apiClient } from "@/lib/api-client";
 
 export async function transcribeAudio(
-  token: string,
   audio: Blob,
   filename = "answer.webm",
   interviewId?: string,
@@ -15,9 +9,8 @@ export async function transcribeAudio(
   const form = new FormData();
   form.append("file", audio, filename);
   const query = interviewId ? `?interview_id=${encodeURIComponent(interviewId)}` : "";
-  const response = await fetch(`${env.apiBaseUrl}/voice/transcribe${query}`, {
+  const response = await apiClient.authFetch(`/voice/transcribe${query}`, {
     method: "POST",
-    headers: authHeaders(token),
     body: form,
   });
   if (!response.ok) {
@@ -28,16 +21,14 @@ export async function transcribeAudio(
 }
 
 export async function transcribeAudioWithProgress(
-  token: string,
   audio: Blob,
   onEvent: (event: TranscriptionStreamEvent) => void,
   filename = "answer.webm",
 ): Promise<TranscribeResponse> {
   const form = new FormData();
   form.append("file", audio, filename);
-  const response = await fetch(`${env.apiBaseUrl}/voice/transcribe/stream`, {
+  const response = await apiClient.authFetch("/voice/transcribe/stream", {
     method: "POST",
-    headers: authHeaders(token),
     body: form,
   });
 

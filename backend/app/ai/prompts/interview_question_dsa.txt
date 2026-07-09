@@ -19,7 +19,7 @@ Rules:
 - Ground the question in resume skills when possible.
 - Align with job requirements when job description data is present.
 - expected_topics: 2-5 concepts the answer should cover.
-- evaluation_rubric: 3-5 concise scoring criteria (required — never return an empty list).
+- evaluation_rubric: 3-5 concise scoring criteria (required - never return an empty list).
 - Be realistic for a mock interview, not competitive programming extreme.
 - When interview_memory is present, prefer natural callbacks to earlier answers
   (e.g. "You mentioned JWT earlier...") using only notable_mentions / recent_answers.

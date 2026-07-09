@@ -1,6 +1,6 @@
-# InterviewerAI — Implementation Docs
+# InterviewerAI - Implementation Docs
 
-A living record of **what we built, why, and how** — written iteration by
+A living record of **what we built, why, and how** - written iteration by
 iteration so anyone (including future-you in an interview) can understand the
 whole system by reading in order.
 
@@ -25,6 +25,7 @@ One file per phase/iteration, kept small and self-contained:
 | [`implementation/12-voice-pipeline.md`](./implementation/12-voice-pipeline.md) | Microphone capture, STT, transcript generation (audio separate from interview). |
 | [`implementation/13-follow-up-questions.md`](./implementation/13-follow-up-questions.md) | Claim extraction + probing follow-ups with configurable depth. |
 | [`implementation/14-interview-memory.md`](./implementation/14-interview-memory.md) | Rolling interview memory so later questions can callback earlier answers. |
+| [`implementation/15-dashboard.md`](./implementation/15-dashboard.md) | Interview history, strengths, weaknesses, category scores, progress. |
 
 New iterations append a new numbered file here.
 
@@ -32,13 +33,13 @@ New iterations append a new numbered file here.
 
 Each iteration doc follows the same shape:
 
-1. **Goal** — what this iteration delivers in one sentence.
-2. **Scope** — explicitly in and out.
-3. **Architecture & decisions** — the *why*, with tradeoffs and alternatives.
-4. **File-by-file walkthrough** — every file created, what it does.
-5. **Commands & verification** — how it was checked, with results.
-6. **How to run** — reproducible steps.
-7. **Notes & gotchas** — anything non-obvious for later.
+1. **Goal** - what this iteration delivers in one sentence.
+2. **Scope** - explicitly in and out.
+3. **Architecture & decisions** - the *why*, with tradeoffs and alternatives.
+4. **File-by-file walkthrough** - every file created, what it does.
+5. **Commands & verification** - how it was checked, with results.
+6. **How to run** - reproducible steps.
+7. **Notes & gotchas** - anything non-obvious for later.
 
 ## Project rules these docs uphold
 

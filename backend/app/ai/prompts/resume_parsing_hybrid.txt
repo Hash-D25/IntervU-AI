@@ -5,7 +5,7 @@ Return ONLY compact JSON:
 {{"skills":[],"projects":[{{"name":"","description":null,"technologies":[]}}],"experience":[{{"title":"","company":null,"duration":null,"description":null}}],"technologies":[],"education":[{{"institution":"","degree":null,"year":null}}],"achievements":[]}}
 
 Keep existing partial values. Fill projects, experience, education from text. Leave achievements as [] (already extracted).
-Use EXACT project names from the resume when provided in partial JSON — do not shorten or paraphrase titles.
+Use EXACT project names from the resume when provided in partial JSON - do not shorten or paraphrase titles.
 Be factual.
 
 Text:

@@ -19,7 +19,7 @@ _SECTION_BREAK = re.compile(
     r"achievements|awards|honors|summary|objective|certifications|technologies)\b",
     re.IGNORECASE,
 )
-_TITLE_SEP = re.compile(r"(?:\s[-–—]\s+|:\s)")
+_TITLE_SEP = re.compile(r"(?:\s[-–-]\s+|:\s)")
 _FORMATTING = re.compile(r"[*_]+")
 _OCR_SPLIT = re.compile(r"\b([A-Z])\s+([a-z]{2,})\b")
 _MERGED_OCR = re.compile(r"\b([A-Z])\s+([a-z]{1,3})(?=[A-Z])")
@@ -95,7 +95,7 @@ def align_question_text(text: str, project_names: list[str]) -> str:
         if not marker or marker.lower() not in result.lower():
             continue
         pattern = re.compile(
-            re.escape(marker) + r"[\w\s:.\-–—]{0,140}?(?="
+            re.escape(marker) + r"[\w\s:.\-–-]{0,140}?(?="
             r"[?.!,;)]|\s+(?:and|or|versus|vs\.?|with|using|in|for|that|where|when)\b|$)",
             re.IGNORECASE,
         )
@@ -160,7 +160,7 @@ def _normalize_dash_variants(text: str, canonical: str) -> str:
     if " - " in canonical:
         left, right = canonical.split(" - ", 1)
         pattern = re.compile(
-            re.escape(left) + r"\s*[-–—]\s*" + re.escape(right),
+            re.escape(left) + r"\s*[-–-]\s*" + re.escape(right),
             re.IGNORECASE,
         )
         return pattern.sub(canonical, text)
@@ -243,7 +243,7 @@ def _fix_ocr_spacing(text: str) -> str:
 def _name_match_key(name: str) -> str:
     key = re.sub(r"\s+", " ", name.strip().casefold())
     key = re.sub(r"\s*:\s*", ": ", key)
-    key = re.sub(r"\s*[-–—]\s*", " - ", key)
+    key = re.sub(r"\s*[-–-]\s*", " - ", key)
     return key
 
 

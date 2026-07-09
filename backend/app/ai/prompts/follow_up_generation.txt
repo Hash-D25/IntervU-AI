@@ -16,7 +16,7 @@ Rules:
 - Prefer why/how/tradeoff/ownership/metrics probes.
 - Do not rephrase the original question.
 - Do not ask something already covered by previous_follow_ups.
-- Do not probe question premises/assumptions — only probe which candidate stated.
+- Do not probe question premises/assumptions - only probe which candidate stated.
 - Keep the tone professional and conversational.
 - Use the candidate's own terms when possible.
 - When interview_memory is present, you may callback to earlier answers

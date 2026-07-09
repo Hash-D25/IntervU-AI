@@ -46,6 +46,21 @@ class ExecutionSnapshotResponse(BaseModel):
     session_context: SessionContext
 
 
+class InterviewSummaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    company_name: str | None
+    target_role: str
+    interview_type: InterviewType | None
+    status: InterviewStatus
+    created_at: datetime
+    updated_at: datetime
+    answered_count: int = Field(default=0, ge=0)
+    overall_score: float | None = Field(default=None, ge=0, le=10)
+    has_feedback: bool = False
+
+
 class InterviewResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

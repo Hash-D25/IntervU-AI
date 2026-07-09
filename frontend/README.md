@@ -1,4 +1,4 @@
-# InterviewerAI — Frontend
+# InterviewerAI - Frontend
 
 Next.js (App Router) + TypeScript, organized **by feature**.
 
@@ -7,7 +7,7 @@ Next.js (App Router) + TypeScript, organized **by feature**.
 ```
 src/
 ├── app/          # routes (App Router): layouts, pages, route handlers
-├── features/     # feature modules — the vertical slices of the UI
+├── features/     # feature modules - the vertical slices of the UI
 │   ├── resume/
 │   ├── interview/
 │   └── feedback/

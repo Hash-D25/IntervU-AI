@@ -15,13 +15,13 @@ Return ONLY valid JSON:
 
 Rules:
 - Ask one clear question only.
-- Follow execution.phase_instruction when present — it defines the intent for this phase.
-- RESUME phase: breadth/compare across projects or experience — not a deep implementation walkthrough.
+- Follow execution.phase_instruction when present - it defines the intent for this phase.
+- RESUME phase: breadth/compare across projects or experience - not a deep implementation walkthrough.
 - PROJECTS phase: deep-dive ONE project from execution.focus_project_names only.
 - Copy project names EXACTLY from resume.canonical_project_names. Use hyphen (-), not en/em dash.
 - Do NOT reference projects listed in execution.projects_already_covered during PROJECTS phase.
 - expected_topics: 2-5 concepts the answer should cover.
-- evaluation_rubric: 3-5 concise scoring criteria (required — never return an empty list).
+- evaluation_rubric: 3-5 concise scoring criteria (required - never return an empty list).
 - When interview_memory is present, prefer natural callbacks to earlier answers
   (e.g. "You mentioned JWT earlier...") using only notable_mentions / recent_answers.
   Never invent prior statements.

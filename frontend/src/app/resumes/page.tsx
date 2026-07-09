@@ -1,24 +1,27 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { AppShell } from "@/components/AppShell";
+import { AuthGuard } from "@/components/AuthGuard";
+import { GlassCard } from "@/components/GlassCard";
+import { PageHeader } from "@/components/PageHeader";
 import { ParseProgressBar } from "@/components/ParseProgressBar";
 import { ParsedProfileReview } from "@/components/ParsedProfileReview";
 import {
   getParsedProfile,
-  getStoredToken,
   listResumes,
-  login,
   parseResumeWithProgress,
-  storeToken,
   uploadResume,
 } from "@/features/resume/api";
 import type { ParsedProfile, ParseProgressEvent, Resume } from "@/features/resume/types";
+import { useAuth } from "@/features/auth";
+import { ApiError } from "@/lib/api-client";
 
 export default function ResumesPage() {
-  const [token, setToken] = useState<string | null>(() => getStoredToken());
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { isAuthenticated } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [resumes, setResumes] = useState<Resume[]>([]);
   const [parsingId, setParsingId] = useState<string | null>(null);
   const [progress, setProgress] = useState<ParseProgressEvent | null>(null);
@@ -26,64 +29,68 @@ export default function ResumesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const refreshResumes = useCallback(async (accessToken: string) => {
-    const items = await listResumes(accessToken);
+  const refreshResumes = useCallback(async () => {
+    const items = await listResumes();
     setResumes(items);
   }, []);
 
   useEffect(() => {
-    if (token) {
-      void refreshResumes(token).catch(() => {
-        setError("Could not load resumes.");
+    if (!isAuthenticated) {
+      return;
+    }
+    void refreshResumes().catch(() => {
+      setError("Could not load resumes.");
+    });
+  }, [isAuthenticated, refreshResumes]);
+
+  const runParse = useCallback(async (resumeId: string) => {
+    setParsingId(resumeId);
+    setParsed(null);
+    setError(null);
+    setProgress({ stage: "starting", percent: 0, message: "Starting parse…" });
+
+    try {
+      const result = await parseResumeWithProgress(resumeId, (event) => {
+        setProgress(event);
       });
+      setParsed(result);
+      setProgress({ stage: "done", percent: 100, message: "Parse complete" });
+      return result;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Parse failed.");
+      setProgress(null);
+      throw err;
+    } finally {
+      setParsingId(null);
     }
-  }, [token, refreshResumes]);
+  }, []);
 
-  async function handleLogin(event: FormEvent) {
-    event.preventDefault();
+  async function handleFileSelected(file: File) {
     setError(null);
-    try {
-      const tokens = await login(email, password);
-      storeToken(tokens.access_token);
-      setToken(tokens.access_token);
-      await refreshResumes(tokens.access_token);
-    } catch {
-      setError("Login failed. Check your email and password.");
-    }
-  }
-
-  async function handleUpload(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!token) {
-      return;
-    }
-    const form = event.currentTarget;
-    const fileInput = form.elements.namedItem("resume") as HTMLInputElement;
-    const file = fileInput.files?.[0];
-    if (!file) {
-      return;
-    }
-
+    setParsed(null);
     setIsUploading(true);
-    setError(null);
+    setProgress({ stage: "uploading", percent: 5, message: "Uploading PDF…" });
+
     try {
-      await uploadResume(token, file);
-      await refreshResumes(token);
-      form.reset();
-    } catch {
-      setError("Upload failed.");
+      const resume = await uploadResume(file);
+      await refreshResumes();
+      setProgress({ stage: "uploaded", percent: 15, message: "Upload complete. Parsing…" });
+      await runParse(resume.id);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Upload or parse failed.");
+      setProgress(null);
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   }
 
   async function handleViewParsed(resumeId: string) {
-    if (!token) {
-      return;
-    }
     setError(null);
     try {
-      const result = await getParsedProfile(token, resumeId);
+      const result = await getParsedProfile(resumeId);
       setParsed(result);
       setProgress({ stage: "done", percent: 100, message: "Parse complete" });
     } catch (err) {
@@ -92,149 +99,114 @@ export default function ResumesPage() {
     }
   }
 
-  async function handleParse(resumeId: string) {
-    if (!token) {
-      return;
-    }
-
-    setParsingId(resumeId);
-    setParsed(null);
-    setError(null);
-    setProgress({ stage: "starting", percent: 0, message: "Starting parse…" });
-
-    try {
-      const result = await parseResumeWithProgress(token, resumeId, (event) => {
-        setProgress(event);
-      });
-      setParsed(result);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Parse failed.");
-      setProgress(null);
-    } finally {
-      setParsingId(null);
-    }
-  }
-
-  if (!token) {
-    return (
-      <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 p-8">
-        <div>
-          <h1 className="text-3xl font-bold">InterviewerAI</h1>
-          <p className="mt-2 text-slate-600">Sign in to upload and parse your resume.</p>
-        </div>
-        <form onSubmit={handleLogin} className="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700"
-          >
-            Sign in
-          </button>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        </form>
-      </main>
-    );
-  }
+  const isBusy = isUploading || parsingId !== null;
+  const showProgress = isBusy || progress !== null;
 
   return (
-    <main className="mx-auto min-h-screen max-w-3xl space-y-8 p-8">
-      <header>
-        <h1 className="text-3xl font-bold">Resume parsing</h1>
-        <p className="mt-2 text-slate-600">Upload a PDF and parse it with live progress.</p>
-      </header>
-
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold">Upload</h2>
-        <form onSubmit={handleUpload} className="mt-4 flex flex-wrap items-center gap-3">
-          <input type="file" name="resume" accept="application/pdf" required />
-          <button
-            type="submit"
-            disabled={isUploading}
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
-          >
-            {isUploading ? "Uploading…" : "Upload PDF"}
-          </button>
-        </form>
-      </section>
-
-      {(progress || parsingId) && (
-        <section className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold">Parsing progress</h2>
-          <ParseProgressBar
-            percent={progress?.percent ?? 0}
-            message={
-              progress?.percent === 100 && !parsingId
-                ? "Parse complete"
-                : (progress?.message ?? "Working…")
-            }
-            isActive={parsingId !== null}
+    <AuthGuard title="Resume parsing" subtitle="Sign in to upload and parse your resume.">
+      <AppShell>
+        <main className="mx-auto min-h-screen max-w-5xl space-y-8 p-6 sm:p-8">
+          <PageHeader
+            eyebrow="Resume"
+            title="Parsing"
+            description="Upload a PDF - it will be parsed and saved automatically."
           />
-        </section>
-      )}
 
-      <section className="rounded-xl border bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Your resumes</h2>
-          <button
-            type="button"
-            onClick={() => refreshResumes(token)}
-            className="text-sm text-indigo-600 hover:underline"
+          <GlassCard title="Upload" accent="cyan">
+            <p className="mb-4 text-sm text-slate-500">
+              Select a PDF resume. Upload and parsing start immediately with live progress below.
+            </p>
+            <label className="flex flex-wrap items-center gap-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                disabled={isBusy}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) {
+                    void handleFileSelected(file);
+                  }
+                }}
+                className="max-w-full text-sm text-slate-400 file:mr-3 file:rounded-lg file:border file:border-white/10 file:bg-white/[0.04] file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-300 hover:file:bg-white/[0.08] disabled:opacity-50"
+              />
+              {isBusy ? (
+                <span className="text-sm text-cyan-300/80">
+                  {isUploading ? "Uploading…" : "Parsing…"}
+                </span>
+              ) : null}
+            </label>
+          </GlassCard>
+
+          {showProgress ? (
+            <GlassCard title="Parsing progress" accent="violet">
+              <ParseProgressBar
+                percent={progress?.percent ?? 0}
+                message={progress?.message ?? "Working…"}
+                isActive={isBusy}
+              />
+            </GlassCard>
+          ) : null}
+
+          <GlassCard
+            title="Your resumes"
+            accent="green"
+            action={
+              <button
+                type="button"
+                onClick={() => void refreshResumes()}
+                className="text-sm font-medium text-cyan-400/80 hover:text-cyan-300"
+              >
+                Refresh
+              </button>
+            }
           >
-            Refresh
-          </button>
-        </div>
-        {resumes.length === 0 ? (
-          <p className="text-sm text-slate-500">No resumes yet. Upload a PDF above.</p>
-        ) : (
-          <ul className="divide-y">
-            {resumes.map((resume) => (
-              <li key={resume.id} className="flex items-center justify-between gap-4 py-3">
-                <div>
-                  <p className="font-medium">{resume.original_filename}</p>
-                  <p className="text-xs text-slate-500">{resume.id}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleViewParsed(resume.id)}
-                    disabled={parsingId !== null}
-                    className="rounded-lg border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+            {resumes.length === 0 ? (
+              <p className="text-sm text-slate-500">No resumes yet. Upload a PDF above.</p>
+            ) : (
+              <ul className="space-y-3">
+                {resumes.map((resume) => (
+                  <li
+                    key={resume.id}
+                    className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3"
                   >
-                    View parsed
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleParse(resume.id)}
-                    disabled={parsingId !== null}
-                    className="rounded-lg border border-indigo-600 px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 disabled:opacity-50"
-                  >
-                    {parsingId === resume.id ? "Parsing…" : "Re-parse"}
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                    <div>
+                      <p className="font-medium text-slate-200">{resume.original_filename}</p>
+                      <p className="text-xs text-slate-600">{resume.id}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void handleViewParsed(resume.id)}
+                        disabled={isBusy}
+                        className="btn-glass px-3 py-1.5 disabled:opacity-50"
+                      >
+                        View parsed
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void runParse(resume.id)}
+                        disabled={isBusy}
+                        className="btn-neon px-3 py-1.5 disabled:opacity-50"
+                      >
+                        {parsingId === resume.id ? "Parsing…" : "Re-parse"}
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </GlassCard>
 
-      {parsed ? <ParsedProfileReview profile={parsed} /> : null}
+          {parsed ? <ParsedProfileReview profile={parsed} /> : null}
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-    </main>
+          {error ? (
+            <p className="rounded-lg border border-rose-400/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300/90">
+              {error}
+            </p>
+          ) : null}
+        </main>
+      </AppShell>
+    </AuthGuard>
   );
 }
