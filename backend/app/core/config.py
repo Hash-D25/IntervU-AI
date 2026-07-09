@@ -87,7 +87,7 @@ class Settings(BaseSettings):
     chroma_port: int = 8001
 
     # CORS - comma-separated origins for production; dev also allows localhost regex.
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,https://intervu-ai-inky.vercel.app"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,https://interv-u-ai-orcin.vercel.app"
 
     @field_validator("database_url", mode="before")
     @classmethod
