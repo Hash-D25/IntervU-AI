@@ -82,6 +82,17 @@ class Settings(BaseSettings):
     interview_memory_max_answers: int = 8
     interview_memory_excerpt_chars: int = 280
 
+    # Realtime voice-to-voice interview (V2). Gated by REALTIME_INTERVIEW_ENABLED.
+    synthesizer: str = "fake"  # fake | browser | groq | openai | gemini | elevenlabs
+    tts_voice: str = ""
+    tts_model: str = ""
+    tts_api_key: str = ""
+    tts_base_url: str = ""
+    realtime_interview_enabled: bool = False
+    ws_max_session_minutes: int = 30
+    turn_silence_ms: int = 1500
+    turn_min_speech_ms: int = 800
+
     # Vector store
     chroma_host: str = "localhost"
     chroma_port: int = 8001

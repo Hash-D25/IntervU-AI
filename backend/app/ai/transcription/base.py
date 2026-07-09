@@ -30,3 +30,8 @@ class Transcriber(Protocol):
         self,
         audio: ProcessedAudio,
     ) -> AsyncIterator[TranscriptionChunk]: ...
+
+    def transcribe_realtime(
+        self,
+        chunks: AsyncIterator[bytes],
+    ) -> AsyncIterator[TranscriptionChunk]: ...

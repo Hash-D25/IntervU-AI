@@ -116,6 +116,15 @@ class WhisperTranscriber:
                 end_ms=segment.end_ms,
             )
 
+    async def transcribe_realtime(
+        self,
+        chunks: AsyncIterator[bytes],
+    ) -> AsyncIterator[TranscriptionChunk]:
+        raise BadRequestError(
+            "WhisperTranscriber does not support realtime chunk streaming yet"
+        )
+        yield TranscriptionChunk(text="unreachable")  # pragma: no cover
+
     def _transcribe_payload(
         self,
         content: bytes,
