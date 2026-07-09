@@ -6,6 +6,7 @@ Nothing in the app reads ``os.environ`` directly; everything goes through
 
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -86,7 +87,19 @@ class Settings(BaseSettings):
     chroma_port: int = 8001
 
     # CORS - comma-separated origins for production; dev also allows localhost regex.
-    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,https://intervu-ai-inky.vercel.app"
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        """Accept Render/Heroku ``postgres://`` URLs for the async psycopg driver."""
+        if not isinstance(value, str):
+            return value
+        if value.startswith("postgres://"):
+            return value.replace("postgres://", "postgresql+psycopg://", 1)
+        if value.startswith("postgresql://") and "+psycopg" not in value:
+            return value.replace("postgresql://", "postgresql+psycopg://", 1)
+        return value
 
     @property
     def cors_origin_list(self) -> list[str]:
