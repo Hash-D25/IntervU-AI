@@ -12,3 +12,7 @@ class UserRepository(BaseRepository[User]):
     async def get_by_email(self, email: str) -> User | None:
         result = await self.session.execute(select(User).where(User.email == email))
         return result.scalar_one_or_none()
+
+    async def get_by_google_sub(self, google_sub: str) -> User | None:
+        result = await self.session.execute(select(User).where(User.google_sub == google_sub))
+        return result.scalar_one_or_none()

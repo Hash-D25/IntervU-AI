@@ -5,6 +5,7 @@ the in-memory database persists across requests within a test.
 """
 
 from collections.abc import AsyncGenerator
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
@@ -12,6 +13,7 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
+from app.core.config import get_settings
 from app.db.registry import Base
 from app.db.session import get_session
 from app.main import create_app
@@ -41,6 +43,8 @@ async def client() -> AsyncGenerator[AsyncClient]:
 
     app: FastAPI = create_app()
     app.dependency_overrides[get_session] = override_get_session
+    settings = get_settings().model_copy(update={"google_client_id": "test-google-client-id"})
+    app.dependency_overrides[get_settings] = lambda: settings
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
@@ -126,3 +130,58 @@ async def test_logout_revokes_refresh_token(client: AsyncClient) -> None:
         "/api/v1/auth/refresh", json={"refresh_token": tokens["refresh_token"]}
     )
     assert reused.status_code == 401
+
+
+_GOOGLE_CLAIMS = {
+    "sub": "google-user-123",
+    "email": "google.user@example.com",
+    "email_verified": True,
+    "name": "Google User",
+    "iss": "accounts.google.com",
+}
+
+
+@patch("app.features.auth.service.verify_google_id_token", return_value=_GOOGLE_CLAIMS)
+async def test_google_login_creates_user_and_returns_tokens(
+    _mock_verify: object, client: AsyncClient
+) -> None:
+    response = await client.post("/api/v1/auth/google", json={"id_token": "fake-google-token"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["access_token"]
+    assert body["refresh_token"]
+
+    me = await client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {body['access_token']}"},
+    )
+    assert me.status_code == 200
+    assert me.json()["email"] == _GOOGLE_CLAIMS["email"]
+
+
+@patch(
+    "app.features.auth.service.verify_google_id_token",
+    return_value={
+        **_GOOGLE_CLAIMS,
+        "email": _REGISTER_PAYLOAD["email"],
+        "name": _REGISTER_PAYLOAD["full_name"],
+    },
+)
+async def test_google_login_links_existing_password_account(
+    _mock_verify: object, client: AsyncClient
+) -> None:
+    await client.post("/api/v1/auth/register", json=_REGISTER_PAYLOAD)
+
+    response = await client.post(
+        "/api/v1/auth/google",
+        json={"id_token": "fake-google-token"},
+    )
+    assert response.status_code == 200
+
+    me = await client.get(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {response.json()['access_token']}"},
+    )
+    assert me.status_code == 200
+    assert me.json()["email"] == _REGISTER_PAYLOAD["email"]

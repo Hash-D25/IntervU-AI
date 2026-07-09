@@ -13,6 +13,7 @@ import {
 
 import {
   fetchCurrentUser,
+  loginWithGoogle,
   loginUser,
   logoutUser,
   refreshTokens,
@@ -33,6 +34,7 @@ type AuthContextValue = {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginRequest) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   register: (payload: RegisterRequest) => Promise<void>;
   logout: () => Promise<void>;
 };
@@ -124,6 +126,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [applyTokens],
   );
 
+  const loginWithGoogleAuth = useCallback(
+    async (idToken: string) => {
+      const tokens = await loginWithGoogle(idToken);
+      await applyTokens(tokens.access_token, tokens.refresh_token);
+    },
+    [applyTokens],
+  );
+
   const register = useCallback(
     async (payload: RegisterRequest) => {
       await registerUser(payload);
@@ -150,10 +160,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated: user !== null,
       isLoading,
       login,
+      loginWithGoogle: loginWithGoogleAuth,
       register,
       logout,
     }),
-    [user, isLoading, login, register, logout],
+    [user, isLoading, login, loginWithGoogleAuth, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

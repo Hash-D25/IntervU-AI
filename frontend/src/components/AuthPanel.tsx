@@ -4,7 +4,9 @@ import { FormEvent, useState } from "react";
 
 import { AppIcon } from "@/components/AppIcon";
 import { AppShell } from "@/components/AppShell";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useAuth } from "@/features/auth";
+import { env } from "@/env";
 import { ApiError } from "@/lib/api-client";
 
 type AuthMode = "login" | "register";
@@ -16,7 +18,7 @@ type AuthPanelProps = {
 };
 
 export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelProps) {
-  const { login, register } = useAuth();
+  const { login, loginWithGoogle, register } = useAuth();
   const [mode, setMode] = useState<AuthMode>("login");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,6 +46,25 @@ export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelPro
             : mode === "login"
               ? "Login failed. Check your email and password."
               : "Registration failed. Try a different email.";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleGoogleSignIn(idToken: string) {
+    setError(null);
+    setIsSubmitting(true);
+
+    try {
+      await loginWithGoogle(idToken);
+    } catch (err) {
+      const message =
+        err instanceof ApiError
+          ? err.message
+          : err instanceof TypeError
+            ? "Cannot reach the API. Check that the backend is running and CORS is configured."
+            : "Google sign-in failed.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -97,6 +118,21 @@ export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelPro
           onSubmit={(e) => void handleSubmit(e)}
           className="glass-panel-strong flex flex-col gap-4 p-8"
         >
+          {mode === "login" && env.googleClientId ? (
+            <>
+              <GoogleSignInButton
+                disabled={isSubmitting}
+                onSuccess={handleGoogleSignIn}
+                onError={() => setError("Google sign-in was cancelled or failed.")}
+              />
+              <div className="flex items-center gap-3 text-xs text-slate-500">
+                <span className="h-px flex-1 bg-white/10" />
+                or continue with email
+                <span className="h-px flex-1 bg-white/10" />
+              </div>
+            </>
+          ) : null}
+
           {mode === "register" ? (
             <input
               type="text"

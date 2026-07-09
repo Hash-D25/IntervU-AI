@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "InterviewerAI frontend - Next.js App Router, feature-based.",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node scripts/clean-next-cache.mjs && next dev",
     "dev:fast": "next dev",
@@ -12,6 +15,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
     "@tanstack/react-query": "^5.62.0",
     "next": "15.3.9",
     "react": "^19.0.0",

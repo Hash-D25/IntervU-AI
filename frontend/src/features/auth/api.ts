@@ -19,6 +19,18 @@ export async function loginUser(credentials: LoginRequest): Promise<TokenRespons
   return (await response.json()) as TokenResponse;
 }
 
+export async function loginWithGoogle(idToken: string): Promise<TokenResponse> {
+  const response = await fetch(`${env.apiBaseUrl}/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ id_token: idToken }),
+  });
+  if (!response.ok) {
+    throw new ApiError(response.status, await parseErrorMessage(response, "Google sign-in failed"));
+  }
+  return (await response.json()) as TokenResponse;
+}
+
 export async function registerUser(payload: RegisterRequest): Promise<User> {
   const response = await fetch(`${env.apiBaseUrl}/auth/register`, {
     method: "POST",

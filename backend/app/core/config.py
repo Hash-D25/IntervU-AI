@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 7
 
+    # Google SSO (Google Cloud OAuth 2.0 Web client ID).
+    google_client_id: str = ""
+
     # Resume uploads. ``local`` writes to disk; ``cloudinary`` uses Cloudinary raw uploads.
     resume_storage_backend: str = "local"
     resume_upload_dir: str = "uploads"

@@ -10,7 +10,8 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import Settings
-from app.core.exceptions import ConflictError, UnauthorizedError
+from app.core.exceptions import BadRequestError, ConflictError, UnauthorizedError
+from app.core.security.google import verify_google_id_token
 from app.core.security.passwords import hash_password, verify_password
 from app.core.security.tokens import (
     create_access_token,
@@ -53,8 +54,48 @@ class AuthService:
 
     async def login(self, email: str, password: str) -> TokenResponse:
         user = await self._users.get_by_email(email)
-        if user is None or not verify_password(password, user.hashed_password):
+        if (
+            user is None
+            or user.hashed_password is None
+            or not verify_password(password, user.hashed_password)
+        ):
             raise UnauthorizedError("Invalid email or password")
+
+        tokens = await self._issue_tokens(user)
+        await self._session.commit()
+        return tokens
+
+    async def login_with_google(self, id_token: str) -> TokenResponse:
+        if not self._settings.google_client_id:
+            raise BadRequestError("Google sign-in is not configured")
+
+        claims = verify_google_id_token(id_token, self._settings.google_client_id)
+        google_sub = claims["sub"]
+        email = claims.get("email")
+        if not email:
+            raise UnauthorizedError("Google account has no email")
+        if not claims.get("email_verified", False):
+            raise UnauthorizedError("Google email is not verified")
+
+        full_name = claims.get("name") or email.split("@")[0]
+
+        user = await self._users.get_by_google_sub(google_sub)
+        if user is None:
+            existing = await self._users.get_by_email(email)
+            if existing is not None:
+                if existing.google_sub is not None and existing.google_sub != google_sub:
+                    raise ConflictError("Email is linked to a different Google account")
+                existing.google_sub = google_sub
+                user = existing
+            else:
+                user = await self._users.add(
+                    User(
+                        email=email,
+                        full_name=full_name,
+                        hashed_password=None,
+                        google_sub=google_sub,
+                    )
+                )
 
         tokens = await self._issue_tokens(user)
         await self._session.commit()

@@ -4,6 +4,7 @@ from fastapi import APIRouter, status
 
 from app.features.auth.dependencies import AuthServiceDep, CurrentUserDep
 from app.features.auth.schemas import (
+    GoogleLoginRequest,
     LoginRequest,
     RefreshRequest,
     RegisterRequest,
@@ -23,6 +24,11 @@ async def register(data: RegisterRequest, service: AuthServiceDep) -> User:
 @router.post("/login", response_model=TokenResponse)
 async def login(data: LoginRequest, service: AuthServiceDep) -> TokenResponse:
     return await service.login(data.email, data.password)
+
+
+@router.post("/google", response_model=TokenResponse)
+async def google_login(data: GoogleLoginRequest, service: AuthServiceDep) -> TokenResponse:
+    return await service.login_with_google(data.id_token)
 
 
 @router.post("/refresh", response_model=TokenResponse)
