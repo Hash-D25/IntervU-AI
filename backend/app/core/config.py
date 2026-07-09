@@ -89,6 +89,13 @@ class Settings(BaseSettings):
     # CORS - comma-separated origins for production; dev also allows localhost regex.
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000,https://interv-u-ai-orcin.vercel.app"
 
+    @field_validator("google_client_id", mode="before")
+    @classmethod
+    def normalize_google_client_id(cls, value: object) -> str:
+        if isinstance(value, str):
+            return value.strip().strip('"').strip("'")
+        return ""
+
     @field_validator("database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:
