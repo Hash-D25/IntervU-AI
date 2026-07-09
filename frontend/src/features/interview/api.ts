@@ -2,10 +2,10 @@ import type {
   CreateInterviewRequest,
   ExecutionSnapshot,
   Interview,
-  InterviewSummary,
   SubmitAnswerResponse,
 } from "@/features/interview/types";
 import { apiClient } from "@/lib/api-client";
+import { throwIfNotOk } from "@/lib/api-response";
 
 type JobDescriptionPdfAnalysisResponse = {
   skills: string[];
@@ -15,10 +15,6 @@ type JobDescriptionPdfAnalysisResponse = {
   analyzer_name: string;
   extracted_text: string | null;
 };
-
-export async function listInterviews(): Promise<InterviewSummary[]> {
-  return apiClient.authGet<InterviewSummary[]>("/interviews/");
-}
 
 export async function getInterview(interviewId: string): Promise<Interview> {
   return apiClient.authGet<Interview>(`/interviews/${interviewId}`);
@@ -54,9 +50,7 @@ export async function parseJobDescriptionPdf(file: File): Promise<string> {
     body: formData,
   });
 
-  if (!response.ok) {
-    throw new Error("Could not parse the job description PDF.");
-  }
+  await throwIfNotOk(response, "Could not parse the job description PDF.");
 
   const body = (await response.json()) as JobDescriptionPdfAnalysisResponse;
   return body.extracted_text?.trim() ?? "";

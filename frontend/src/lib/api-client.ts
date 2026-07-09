@@ -26,7 +26,7 @@ export function configureApiAuth(handlers: AuthHandlers): void {
   authHandlers = handlers;
 }
 
-async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
+export async function parseApiErrorResponse(response: Response, fallback: string): Promise<string> {
   const body = (await response.json().catch(() => null)) as { detail?: string } | null;
   return body?.detail ?? fallback;
 }
@@ -79,7 +79,7 @@ async function request<TResponse>(
   }
 
   if (!response.ok) {
-    throw new ApiError(response.status, await parseErrorMessage(response, `Request to ${path} failed`));
+    throw new ApiError(response.status, await parseApiErrorResponse(response, `Request to ${path} failed`));
   }
 
   if (response.status === 204) {

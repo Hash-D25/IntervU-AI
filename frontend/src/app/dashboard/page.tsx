@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/AppShell";
 import { AuthGuard } from "@/components/AuthGuard";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { PageHeader } from "@/components/PageHeader";
 import { getDashboardSummary } from "@/features/dashboard/api";
 import { InsightList } from "@/features/dashboard/components/InsightList";
@@ -16,6 +17,7 @@ import { StatCard } from "@/features/dashboard/components/StatCard";
 import { DashboardCard } from "@/features/dashboard/components/DashboardCard";
 import type { DashboardSummary } from "@/features/dashboard/types";
 import { useAuth } from "@/features/auth";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 export default function DashboardPage() {
   const { isAuthenticated } = useAuth();
@@ -29,8 +31,8 @@ export default function DashboardPage() {
     try {
       const data = await getDashboardSummary();
       setSummary(data);
-    } catch {
-      setError("Could not load dashboard.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Could not load dashboard."));
       setSummary(null);
     } finally {
       setIsLoading(false);
@@ -170,11 +172,7 @@ export default function DashboardPage() {
             <InterviewHistoryList items={summary?.interview_history ?? []} />
           </DashboardCard>
 
-          {error ? (
-            <p className="rounded-lg border border-rose-400/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300/90">
-              {error}
-            </p>
-          ) : null}
+          {error ? <ErrorBanner message={error} /> : null}
         </main>
       </AppShell>
     </AuthGuard>

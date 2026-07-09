@@ -37,6 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 def create_app() -> FastAPI:
     settings = get_settings()
+    settings.validate_for_production()
     configure_logging(settings.log_level)
 
     app = FastAPI(title="IntervU", version="0.1.0", lifespan=lifespan)

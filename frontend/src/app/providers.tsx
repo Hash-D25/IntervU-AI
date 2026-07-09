@@ -1,24 +1,18 @@
 "use client";
 
-import { QueryClientProvider } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { AuthProvider } from "@/features/auth";
 import { GoogleAuthProvider } from "@/components/GoogleSignInButton";
 import { SnakeScrollbar } from "@/components/SnakeScrollbar";
-import { createQueryClient } from "@/lib/query-client";
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [queryClient] = useState(createQueryClient);
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <GoogleAuthProvider>
-        <AuthProvider>
-          {children}
-          <SnakeScrollbar />
-        </AuthProvider>
-      </GoogleAuthProvider>
-    </QueryClientProvider>
+    <GoogleAuthProvider>
+      <AuthProvider>
+        {children}
+        <SnakeScrollbar />
+      </AuthProvider>
+    </GoogleAuthProvider>
   );
 }

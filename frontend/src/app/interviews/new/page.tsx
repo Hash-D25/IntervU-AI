@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { AppShell } from "@/components/AppShell";
 import { AuthGuard } from "@/components/AuthGuard";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { GlassCard } from "@/components/GlassCard";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/features/auth";
@@ -13,7 +14,7 @@ import { createInterview, parseJobDescriptionPdf } from "@/features/interview/ap
 import type { InterviewType } from "@/features/interview/types";
 import { listResumes } from "@/features/resume/api";
 import type { Resume } from "@/features/resume/types";
-import { ApiError } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 const INTERVIEW_TYPES: { value: InterviewType; label: string }[] = [
   { value: "technical", label: "Technical" },
@@ -43,8 +44,8 @@ export default function NewInterviewPage() {
       const items = await listResumes();
       setResumes(items);
       setResumeId((current) => current || items[0]?.id || "");
-    } catch {
-      setError("Could not load resumes.");
+    } catch (err) {
+      setError(getErrorMessage(err, "Could not load resumes."));
     } finally {
       setIsLoadingResumes(false);
     }
@@ -76,7 +77,7 @@ export default function NewInterviewPage() {
       });
       router.push(`/interviews/${interview.id}`);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not create interview.");
+      setError(getErrorMessage(err, "Could not create interview."));
     } finally {
       setIsSubmitting(false);
     }
@@ -92,7 +93,7 @@ export default function NewInterviewPage() {
       }
       setJobDescription(extractedText);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not parse the job description PDF.");
+      setError(getErrorMessage(err, "Could not parse the job description PDF."));
     } finally {
       setIsParsingJobDescription(false);
       if (jobDescriptionFileRef.current) {
@@ -241,11 +242,7 @@ export default function NewInterviewPage() {
             </GlassCard>
           )}
 
-          {error ? (
-            <p className="rounded-lg border border-rose-400/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300/90">
-              {error}
-            </p>
-          ) : null}
+          {error ? <ErrorBanner message={error} /> : null}
         </main>
       </AppShell>
     </AuthGuard>

@@ -2,15 +2,18 @@
 
 import { FormEvent, useState } from "react";
 
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { GlassCard } from "@/components/GlassCard";
 import { submitInterviewAnswer } from "@/features/interview/api";
+import type { ExecutionSnapshot } from "@/features/interview/types";
 import { MicrophoneRecorder } from "@/features/voice/components/MicrophoneRecorder";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 interface VoiceAnswerPanelProps {
   interviewId: string;
   questionText: string;
   disabled?: boolean;
-  onSubmitted: () => void;
+  onSubmitted: (snapshot: ExecutionSnapshot) => void;
 }
 
 export function VoiceAnswerPanel({
@@ -32,12 +35,10 @@ export function VoiceAnswerPanel({
     setIsSubmitting(true);
     setError(null);
     try {
-      await submitInterviewAnswer(interviewId, transcript.trim());
-      setTranscript("");
-      onSubmitted();
+      const snapshot = await submitInterviewAnswer(interviewId, transcript.trim());
+      onSubmitted(snapshot);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not submit answer.";
-      setError(message);
+      setError(getErrorMessage(err, "Could not submit answer."));
     } finally {
       setIsSubmitting(false);
     }
@@ -71,14 +72,14 @@ export function VoiceAnswerPanel({
           placeholder="Your spoken answer will appear here after transcription."
         />
 
-        {error ? <p className="text-sm text-rose-400/90">{error}</p> : null}
+        {error ? <ErrorBanner message={error} /> : null}
 
         <button
           type="submit"
           disabled={disabled || isSubmitting}
           className="btn-success disabled:opacity-50"
         >
-          {isSubmitting ? "Submitting…" : "Submit answer"}
+          {isSubmitting ? "Evaluating your answer…" : "Submit answer"}
         </button>
       </form>
     </GlassCard>

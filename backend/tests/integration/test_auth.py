@@ -8,15 +8,9 @@ from collections.abc import AsyncGenerator
 from unittest.mock import patch
 
 import pytest
-from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
-from sqlalchemy.pool import StaticPool
+from httpx import AsyncClient
 
-from app.core.config import get_settings
-from app.db.registry import Base
-from app.db.session import get_session
-from app.main import create_app
+from tests.integration.conftest import build_integration_client
 
 _REGISTER_PAYLOAD = {
     "email": "candidate@example.com",
@@ -27,30 +21,10 @@ _REGISTER_PAYLOAD = {
 
 @pytest.fixture
 async def client() -> AsyncGenerator[AsyncClient]:
-    engine = create_async_engine(
-        "sqlite+aiosqlite://",
-        poolclass=StaticPool,
-        connect_args={"check_same_thread": False},
-    )
-    async with engine.begin() as connection:
-        await connection.run_sync(Base.metadata.create_all)
-
-    factory = async_sessionmaker(engine, expire_on_commit=False)
-
-    async def override_get_session() -> AsyncGenerator[AsyncSession]:
-        async with factory() as session:
-            yield session
-
-    app: FastAPI = create_app()
-    app.dependency_overrides[get_session] = override_get_session
-    settings = get_settings().model_copy(update={"google_client_id": "test-google-client-id"})
-    app.dependency_overrides[get_settings] = lambda: settings
-
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as async_client:
+    async for async_client, _engine in build_integration_client(
+        settings_overrides={"google_client_id": "test-google-client-id"},
+    ):
         yield async_client
-
-    await engine.dispose()
 
 
 async def _register_and_login(client: AsyncClient) -> dict[str, str]:

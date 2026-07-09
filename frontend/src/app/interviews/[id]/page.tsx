@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 
 import { AppShell } from "@/components/AppShell";
 import { AuthGuard } from "@/components/AuthGuard";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { GlassCard } from "@/components/GlassCard";
 import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/features/auth";
@@ -23,7 +24,7 @@ import {
 } from "@/features/interview/api";
 import type { ExecutionSnapshot, Interview } from "@/features/interview/types";
 import type { FeedbackResult } from "@/features/dashboard/types";
-import { ApiError } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 export default function InterviewPage() {
   const params = useParams<{ id: string }>();
@@ -63,7 +64,7 @@ export default function InterviewPage() {
     setError(null);
     void loadInterview()
       .catch((err) => {
-        setError(err instanceof ApiError ? err.message : "Could not load interview.");
+        setError(getErrorMessage(err, "Could not load interview."));
       })
       .finally(() => {
         setIsLoading(false);
@@ -80,7 +81,7 @@ export default function InterviewPage() {
         setInterview({ ...interview, status: "in_progress" });
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not start interview.");
+      setError(getErrorMessage(err, "Could not start interview."));
     } finally {
       setIsStarting(false);
     }
@@ -93,7 +94,7 @@ export default function InterviewPage() {
       const result = await generateInterviewFeedback(interviewId);
       setFeedback(result);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not generate feedback.");
+      setError(getErrorMessage(err, "Could not generate feedback."));
     } finally {
       setIsGeneratingFeedback(false);
     }
@@ -165,12 +166,14 @@ export default function InterviewPage() {
 
           {!isLoading && currentQuestion && !isCompleted ? (
             <VoiceAnswerPanel
+              key={currentQuestion.id}
               interviewId={interviewId}
               questionText={currentQuestion.text}
-              onSubmitted={() => {
-                void loadInterview().catch(() => {
-                  setError("Answer submitted, but refresh failed.");
-                });
+              onSubmitted={(nextSnapshot) => {
+                setSnapshot(nextSnapshot);
+                if (nextSnapshot.status === "completed" && interview) {
+                  setInterview({ ...interview, status: "completed" });
+                }
               }}
             />
           ) : null}
@@ -224,11 +227,7 @@ export default function InterviewPage() {
             </>
           ) : null}
 
-          {error ? (
-            <p className="rounded-lg border border-rose-400/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300/90">
-              {error}
-            </p>
-          ) : null}
+          {error ? <ErrorBanner message={error} /> : null}
         </main>
       </AppShell>
     </AuthGuard>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AppShell } from "@/components/AppShell";
 import { AuthGuard } from "@/components/AuthGuard";
+import { ErrorBanner } from "@/components/ErrorBanner";
 import { GlassCard } from "@/components/GlassCard";
 import { PageHeader } from "@/components/PageHeader";
 import { ParseProgressBar } from "@/components/ParseProgressBar";
@@ -16,7 +17,7 @@ import {
 } from "@/features/resume/api";
 import type { ParsedProfile, ParseProgressEvent, Resume } from "@/features/resume/types";
 import { useAuth } from "@/features/auth";
-import { ApiError } from "@/lib/api-client";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 export default function ResumesPage() {
   const { isAuthenticated } = useAuth();
@@ -38,8 +39,8 @@ export default function ResumesPage() {
     if (!isAuthenticated) {
       return;
     }
-    void refreshResumes().catch(() => {
-      setError("Could not load resumes.");
+    void refreshResumes().catch((err) => {
+      setError(getErrorMessage(err, "Could not load resumes."));
     });
   }, [isAuthenticated, refreshResumes]);
 
@@ -57,7 +58,7 @@ export default function ResumesPage() {
       setProgress({ stage: "done", percent: 100, message: "Parse complete" });
       return result;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Parse failed.");
+      setError(getErrorMessage(err, "Parse failed."));
       setProgress(null);
       throw err;
     } finally {
@@ -77,7 +78,7 @@ export default function ResumesPage() {
       setProgress({ stage: "uploaded", percent: 15, message: "Upload complete. Parsing…" });
       await runParse(resume.id);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Upload or parse failed.");
+      setError(getErrorMessage(err, "Upload or parse failed."));
       setProgress(null);
     } finally {
       setIsUploading(false);
@@ -94,7 +95,7 @@ export default function ResumesPage() {
       setParsed(result);
       setProgress({ stage: "done", percent: 100, message: "Parse complete" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No parsed profile yet.");
+      setError(getErrorMessage(err, "No parsed profile yet."));
       setParsed(null);
     }
   }
@@ -200,11 +201,7 @@ export default function ResumesPage() {
 
           {parsed ? <ParsedProfileReview profile={parsed} /> : null}
 
-          {error ? (
-            <p className="rounded-lg border border-rose-400/20 bg-rose-400/5 px-4 py-3 text-sm text-rose-300/90">
-              {error}
-            </p>
-          ) : null}
+          {error ? <ErrorBanner message={error} /> : null}
         </main>
       </AppShell>
     </AuthGuard>

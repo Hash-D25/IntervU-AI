@@ -1,5 +1,7 @@
 import type { ParseProgressEvent, ParsedProfile, Resume } from "@/features/resume/types";
-import { ApiError, apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
+import { throwIfNotOk } from "@/lib/api-response";
+import { readSseJsonStream } from "@/lib/sse";
 
 export async function listResumes(): Promise<Resume[]> {
   return apiClient.authGet<Resume[]>("/resumes/");
@@ -12,10 +14,7 @@ export async function uploadResume(file: File): Promise<Resume> {
     method: "POST",
     body: form,
   });
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
-    throw new ApiError(response.status, body?.detail ?? "Upload failed");
-  }
+  await throwIfNotOk(response, "Upload failed");
   return (await response.json()) as Resume;
 }
 
@@ -26,49 +25,12 @@ export async function parseResumeWithProgress(
   const response = await apiClient.authFetch(`/resumes/${resumeId}/parse/stream`, {
     method: "POST",
   });
+  await throwIfNotOk(response, "Parse request failed");
 
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
-    throw new ApiError(response.status, body?.detail ?? "Parse request failed");
-  }
-
-  if (!response.body) {
-    throw new Error("No progress stream returned");
-  }
-
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-    const chunks = buffer.split("\n\n");
-    buffer = chunks.pop() ?? "";
-
-    for (const chunk of chunks) {
-      const line = chunk.trim();
-      if (!line.startsWith("data: ")) {
-        continue;
-      }
-
-      const event = JSON.parse(line.slice(6)) as ParseProgressEvent;
-      onProgress(event);
-
-      if (event.stage === "error") {
-        throw new ApiError(422, event.message);
-      }
-      if (event.stage === "done" && event.result) {
-        return event.result;
-      }
-    }
-  }
-
-  throw new Error("Parse stream ended without a result");
+  return readSseJsonStream<ParseProgressEvent, ParsedProfile>(response, onProgress, {
+    emptyStreamMessage: "No progress stream returned",
+    incompleteStreamMessage: "Parse stream ended without a result",
+  });
 }
 
 export async function getParsedProfile(resumeId: string): Promise<ParsedProfile> {

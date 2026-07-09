@@ -1,11 +1,15 @@
 export type InterviewType = "technical" | "behavioral" | "mixed";
 
+export type InterviewStatus = "created" | "in_progress" | "completed" | "abandoned";
+
+export type ExecutionStatus = "not_started" | "in_progress" | "completed";
+
 export type InterviewSummary = {
   id: string;
   company_name: string | null;
   target_role: string;
   interview_type: InterviewType | null;
-  status: string;
+  status: InterviewStatus;
   created_at: string;
   updated_at: string;
   answered_count: number;
@@ -20,7 +24,7 @@ export type Interview = {
   company_name: string | null;
   target_role: string;
   interview_type: InterviewType | null;
-  status: string;
+  status: InterviewStatus;
   job_description: string | null;
   created_at: string;
   updated_at: string;
@@ -46,10 +50,10 @@ export interface ExecutionQuestion {
 }
 
 export interface ExecutionSnapshot {
-  status: string;
+  status: ExecutionStatus;
   phase: string;
   current_question: ExecutionQuestion | null;
   previous_questions: ExecutionQuestion[];
 }
 
-export interface SubmitAnswerResponse extends ExecutionSnapshot {}
+export type SubmitAnswerResponse = ExecutionSnapshot;

@@ -12,8 +12,9 @@ while keeping auth **isolated** from business logic.
 schemas, repository, service, dependencies, router), `User.hashed_password`,
 migration `0002_auth`, integration tests, config + deps.
 
-**Out:** roles/permissions, email verification, password reset, OAuth social
-login, rate limiting (future iterations).
+**Out:** roles/permissions, email verification, password reset, rate limiting
+(future iterations). Google SSO was added after this doc was written — see
+`core/security/google.py` and `POST /auth/google`.
 
 ---
 

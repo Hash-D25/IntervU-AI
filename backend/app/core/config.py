@@ -112,6 +112,18 @@ class Settings(BaseSettings):
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
+    def validate_for_production(self) -> None:
+        """Fail fast when production is misconfigured."""
+        if self.app_env != "production":
+            return
+
+        insecure_default = "dev-insecure-secret-change-me-in-every-real-environment"
+        if self.jwt_secret_key == insecure_default:
+            raise ValueError("JWT_SECRET_KEY must be set to a strong secret in production")
+
+        if len(self.jwt_secret_key) < 32:
+            raise ValueError("JWT_SECRET_KEY must be at least 32 characters in production")
+
 
 @lru_cache
 def get_settings() -> Settings:

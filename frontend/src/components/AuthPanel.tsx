@@ -7,8 +7,7 @@ import { AppShell } from "@/components/AppShell";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useAuth } from "@/features/auth";
 import { env } from "@/env";
-import { ApiError } from "@/lib/api-client";
-import { getApiConnectionErrorMessage } from "@/lib/api-connection-error";
+import { getErrorMessage } from "@/lib/get-error-message";
 
 type AuthMode = "login" | "register";
 
@@ -39,15 +38,12 @@ export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelPro
         await register({ email, password, full_name: fullName.trim() });
       }
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof TypeError
-            ? getApiConnectionErrorMessage()
-            : mode === "login"
-              ? "Login failed. Check your email and password."
-              : "Registration failed. Try a different email.";
-      setError(message);
+      setError(
+        getErrorMessage(
+          err,
+          mode === "login" ? "Login failed. Check your email and password." : "Registration failed. Try a different email.",
+        ),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -60,13 +56,7 @@ export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelPro
     try {
       await loginWithGoogle(idToken);
     } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof TypeError
-            ? getApiConnectionErrorMessage()
-            : "Google sign-in failed.";
-      setError(message);
+      setError(getErrorMessage(err, "Google sign-in failed."));
     } finally {
       setIsSubmitting(false);
     }

@@ -49,6 +49,17 @@ export function InterviewFeedbackPanel({ feedback }: InterviewFeedbackPanelProps
             </ul>
           </div>
         ) : null}
+
+        {feedback.learning_roadmap.length > 0 ? (
+          <div>
+            <h3 className="text-sm font-medium text-slate-400">Learning roadmap</h3>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-slate-300">
+              {feedback.learning_roadmap.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
       </div>
     </GlassCard>
   );

@@ -1,5 +1,6 @@
 import type { DashboardSummary, FeedbackResult } from "@/features/dashboard/types";
-import { ApiError, apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
+import { authGetNullable } from "@/lib/api-response";
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   return apiClient.authGet<DashboardSummary>("/dashboard/");
@@ -7,14 +8,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 
 export async function getInterviewFeedback(interviewId: string): Promise<FeedbackResult | null> {
   const response = await apiClient.authFetch(`/interviews/${interviewId}/feedback`);
-  if (response.status === 404) {
-    return null;
-  }
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
-    throw new ApiError(response.status, body?.detail ?? "Failed to load feedback");
-  }
-  return (await response.json()) as FeedbackResult;
+  return authGetNullable<FeedbackResult>(response, "Failed to load feedback");
 }
 
 export async function generateInterviewFeedback(interviewId: string): Promise<FeedbackResult> {

@@ -3,8 +3,12 @@
 import pytest
 
 from app.core.exceptions import ParseError
+from app.features.job_description.processing.json_response import (
+    parse_llm_json_response as parse_job_description_json,
+)
 from app.features.resume.parsing.json_response import parse_llm_json_response
-from app.shared.llm_json import extract_json_payload, strip_code_fence
+from app.shared.llm_json import extract_json_payload, parse_llm_payload, strip_code_fence
+from app.features.resume.parsing.schemas import ParsedResume
 
 
 def test_strip_code_fence() -> None:
@@ -35,3 +39,20 @@ def test_extract_json_payload_strips_thinking_block() -> None:
     )
     parsed = parse_llm_json_response(raw)
     assert parsed.skills == ["Rust"]
+
+
+def test_parse_job_description_json_response() -> None:
+    parsed = parse_job_description_json(
+        '{"skills": ["Python"], "technologies": ["FastAPI"], '
+        '"responsibilities": ["Build APIs"], "seniority_level": "mid"}'
+    )
+    assert parsed.seniority_level == "mid"
+
+
+def test_parse_llm_payload_shared_helper() -> None:
+    parsed = parse_llm_payload(
+        '{"skills": ["Go"], "technologies": []}',
+        ParsedResume,
+        error_message="invalid",
+    )
+    assert parsed.skills == ["Go"]
