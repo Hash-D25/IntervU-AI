@@ -8,6 +8,7 @@ import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { useAuth } from "@/features/auth";
 import { env } from "@/env";
 import { ApiError } from "@/lib/api-client";
+import { getApiConnectionErrorMessage } from "@/lib/api-connection-error";
 
 type AuthMode = "login" | "register";
 
@@ -42,7 +43,7 @@ export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelPro
         err instanceof ApiError
           ? err.message
           : err instanceof TypeError
-            ? "Cannot reach the API. Check that the backend is running and CORS is configured."
+            ? getApiConnectionErrorMessage()
             : mode === "login"
               ? "Login failed. Check your email and password."
               : "Registration failed. Try a different email.";
@@ -63,7 +64,7 @@ export function AuthPanel({ eyebrow = "IntervU", title, subtitle }: AuthPanelPro
         err instanceof ApiError
           ? err.message
           : err instanceof TypeError
-            ? "Cannot reach the API. Check that the backend is running and CORS is configured."
+            ? getApiConnectionErrorMessage()
             : "Google sign-in failed.";
       setError(message);
     } finally {
